@@ -1,0 +1,190 @@
+{
+  "model_type": "Random Forest Classifier (IndLands Remote Sensing Benchmark)",
+  "dataset_source": "DataUploader/IndLands Hugging Face Dataset",
+  "total_samples": 285975,
+  "features_trained": [
+    "slope",
+    "aspect",
+    "elevation",
+    "curvature",
+    "plan_curvature",
+    "profile_curvature",
+    "spi",
+    "tri",
+    "twi",
+    "fdr",
+    "NDVI",
+    "NDWI",
+    "SAVI",
+    "EVI",
+    "BSI",
+    "ARVI",
+    "GNDVI",
+    "GRVI",
+    "MSAVI",
+    "mNDMI",
+    "mNDWI",
+    "ASM",
+    "Contrast",
+    "Dissimilarity",
+    "Energy",
+    "Entropy",
+    "GLCMCorrelation",
+    "GLCMMean",
+    "Homogeneity"
+  ],
+  "metrics": {
+    "accuracy": 97.88,
+    "precision": 91.55,
+    "recall": 25.43,
+    "f1_score": 39.8,
+    "roc_auc": 0.9634
+  },
+  "feature_importances": [
+    {
+      "feature": "elevation",
+      "importance": 0.1394,
+      "importance_percent": 13.94
+    },
+    {
+      "feature": "spi",
+      "importance": 0.074,
+      "importance_percent": 7.4
+    },
+    {
+      "feature": "tri",
+      "importance": 0.0552,
+      "importance_percent": 5.52
+    },
+    {
+      "feature": "EVI",
+      "importance": 0.0433,
+      "importance_percent": 4.33
+    },
+    {
+      "feature": "GLCMMean",
+      "importance": 0.0433,
+      "importance_percent": 4.33
+    },
+    {
+      "feature": "GRVI",
+      "importance": 0.0417,
+      "importance_percent": 4.17
+    },
+    {
+      "feature": "mNDWI",
+      "importance": 0.0398,
+      "importance_percent": 3.98
+    },
+    {
+      "feature": "slope",
+      "importance": 0.0357,
+      "importance_percent": 3.57
+    },
+    {
+      "feature": "mNDMI",
+      "importance": 0.0347,
+      "importance_percent": 3.47
+    },
+    {
+      "feature": "GLCMCorrelation",
+      "importance": 0.0329,
+      "importance_percent": 3.29
+    },
+    {
+      "feature": "BSI",
+      "importance": 0.0313,
+      "importance_percent": 3.13
+    },
+    {
+      "feature": "ARVI",
+      "importance": 0.0304,
+      "importance_percent": 3.04
+    },
+    {
+      "feature": "Entropy",
+      "importance": 0.0274,
+      "importance_percent": 2.74
+    },
+    {
+      "feature": "twi",
+      "importance": 0.0265,
+      "importance_percent": 2.65
+    },
+    {
+      "feature": "NDVI",
+      "importance": 0.0264,
+      "importance_percent": 2.64
+    },
+    {
+      "feature": "SAVI",
+      "importance": 0.026,
+      "importance_percent": 2.6
+    },
+    {
+      "feature": "NDWI",
+      "importance": 0.0259,
+      "importance_percent": 2.59
+    },
+    {
+      "feature": "Contrast",
+      "importance": 0.0257,
+      "importance_percent": 2.57
+    },
+    {
+      "feature": "GNDVI",
+      "importance": 0.0255,
+      "importance_percent": 2.55
+    },
+    {
+      "feature": "curvature",
+      "importance": 0.0254,
+      "importance_percent": 2.54
+    },
+    {
+      "feature": "Energy",
+      "importance": 0.0249,
+      "importance_percent": 2.49
+    },
+    {
+      "feature": "ASM",
+      "importance": 0.0245,
+      "importance_percent": 2.45
+    },
+    {
+      "feature": "MSAVI",
+      "importance": 0.0236,
+      "importance_percent": 2.36
+    },
+    {
+      "feature": "Dissimilarity",
+      "importance": 0.0235,
+      "importance_percent": 2.35
+    },
+    {
+      "feature": "aspect",
+      "importance": 0.0232,
+      "importance_percent": 2.32
+    },
+    {
+      "feature": "Homogeneity",
+      "importance": 0.0212,
+      "importance_percent": 2.12
+    },
+    {
+      "feature": "profile_curvature",
+      "importance": 0.0205,
+      "importance_percent": 2.05
+    },
+    {
+      "feature": "plan_curvature",
+      "importance": 0.0182,
+      "importance_percent": 1.82
+    },
+    {
+      "feature": "fdr",
+      "importance": 0.0098,
+      "importance_percent": 0.98
+    }
+  ]
+}

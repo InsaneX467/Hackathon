@@ -238,8 +238,8 @@ export default function FlashFloodPanel({ village }) {
           <div className="ff-section">
             <div className="iot-header-info">
               <span>IoT Mesh Telemetry Status: <strong>4 / 4 Nodes Online</strong></span>
-              <span className="iot-live-pulse">
-                <span className="pulse-dot"></span> LIVE 5s Telemetry Feed
+              <span className="iot-live-pulse" style={{ background: 'rgba(100, 116, 139, 0.1)', color: 'var(--text-muted)' }}>
+                Telemetry Data Stream
               </span>
             </div>
 

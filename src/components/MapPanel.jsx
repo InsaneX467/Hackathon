@@ -1,9 +1,19 @@
 import { MapContainer, TileLayer, CircleMarker, Popup, useMap } from 'react-leaflet';
 import { useEffect, useRef, useState } from 'react';
-import { MapPin, Check, CloudRain, Droplets, Mountain, ShieldAlert, Layers, Compass, Waves, Clock } from 'lucide-react';
+import { MapPin, Layers, Compass, Waves, ShieldAlert } from 'lucide-react';
+import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import { getDataFreshnessBadge } from '../services/telemetryService';
 
-function MapController({ selectedId, villages }) {
+// Fix Leaflet Default Icon Path issues
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
+  iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+  shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+});
+
+function MapController({ selectedId, villages, indlandsPoint }) {
   const map = useMap();
   const villagesRef = useRef(villages);
 
@@ -12,23 +22,33 @@ function MapController({ selectedId, villages }) {
   }, [villages]);
 
   useEffect(() => {
-    if (selectedId && map) {
+    if (indlandsPoint && map) {
+      map.flyTo([indlandsPoint.lat, indlandsPoint.lng], 13, { duration: 1 });
+    } else if (selectedId && map) {
       const v = villagesRef.current.find(v => v.id === selectedId);
       if (v) {
         map.flyTo([v.lat, v.lng], 13, { duration: 1 });
       }
     }
-  }, [selectedId, map]);
+  }, [selectedId, indlandsPoint, map]);
 
   return null;
 }
 
 const MAP_STYLES = {
+  satellite: {
+    label: 'Satellite',
+    icon: Compass,
+    url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+    attribution: 'Tiles &copy; Esri',
+    hasOverlay: true,
+    overlayUrl: 'https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}'
+  },
   light: {
     label: 'Light Canvas',
     icon: Layers,
     url: 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}',
-    attribution: 'Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ',
+    attribution: 'Tiles &copy; Esri',
     hasOverlay: true,
     overlayUrl: 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Reference/MapServer/tile/{z}/{y}/{x}'
   },
@@ -36,85 +56,83 @@ const MAP_STYLES = {
     label: 'Street / Topo',
     icon: MapPin,
     url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+    attribution: '&copy; OpenStreetMap contributors',
     hasOverlay: false
-  },
-  satellite: {
-    label: 'Satellite',
-    icon: Compass,
-    url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-    attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS',
-    hasOverlay: true,
-    overlayUrl: 'https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}'
   }
 };
 
-export default function MapPanel({ villages, selectedId, onSelect, mode = 'landslide', simulationActive = false, simulationTargetId = null }) {
-  const [currentStyle, setCurrentStyle] = useState('light');
+export default function MapPanel({ 
+  villages, 
+  selectedId, 
+  onSelect, 
+  mode = 'landslide',
+  indlandsPoint = null,
+  lastUpdatedTime
+}) {
+  const [currentStyle, setCurrentStyle] = useState('satellite');
+  const [layers, setLayers] = useState({
+    riskZones: true,
+    sensors: true,
+    rivers: true,
+    wards: true
+  });
 
   const activeStyleConfig = MAP_STYLES[currentStyle];
-  const simulationTarget = villages.find(v => v.id === simulationTargetId);
+  const freshness = getDataFreshnessBadge(lastUpdatedTime);
+
+  const toggleLayer = (layerKey) => {
+    setLayers(prev => ({ ...prev, [layerKey]: !prev[layerKey] }));
+  };
 
   return (
-    <div className="panel map-panel">
-      {/* Map Overlay Badge & Style Switcher */}
-      <div className="map-overlay-header">
-        <div className="map-overlay-pill">
-          <MapPin size={14} style={{ color: mode === 'flash_flood' ? '#0284c7' : 'var(--accent-blue)' }} />
-          <span>Spatial Ward {mode === 'flash_flood' ? 'Flash Flood & IoT' : 'Landslide'} Map</span>
-        </div>
-
-        {/* Map Style Selector Pill Group */}
-        <div className="map-style-switcher">
-          {Object.entries(MAP_STYLES).map(([key, cfg]) => {
-            const Icon = cfg.icon;
-            const isActive = currentStyle === key;
-            return (
-              <button
-                key={key}
-                className={`map-style-btn ${isActive ? 'active' : ''}`}
-                onClick={() => setCurrentStyle(key)}
-                title={`Switch to ${cfg.label} view`}
-              >
-                <Icon size={12} />
-                <span>{cfg.label}</span>
-              </button>
-            );
-          })}
+    <div className="panel map-panel" style={{ position: 'relative', height: '100%', flex: 1, display: 'flex', flexDirection: 'column' }}>
+      {/* Map Overlay Header */}
+      <div className="map-overlay-header" style={{
+        position: 'absolute', top: '12px', left: '16px', zIndex: 400,
+        display: 'flex', alignItems: 'center', gap: '10px'
+      }}>
+        <div className="map-overlay-pill" style={{
+          background: 'rgba(15, 23, 42, 0.85)', backdropFilter: 'blur(10px)',
+          border: '1px solid rgba(255,255,255,0.15)', color: '#fff',
+          padding: '6px 14px', borderRadius: '20px', fontSize: '0.8rem', fontWeight: 600,
+          display: 'flex', alignItems: 'center', gap: '8px'
+        }}>
+          {mode === 'flash_flood' ? <Waves size={14} color="#38bdf8" /> : <ShieldAlert size={14} color="#ef4444" />}
+          <span>Spatial Operations Map • {mode === 'flash_flood' ? 'Flash Flood & River Stage' : 'Landslide Susceptibility'}</span>
         </div>
       </div>
 
-      {simulationActive && simulationTarget && (
-        <div className="map-sim-active-badge">
-          <div className="sim-badge-dot"></div>
-          <span>STRESS-TEST SIMULATION ACTIVE: <strong>{simulationTarget.name}</strong></span>
-        </div>
-      )}
-
-      <div className="map-legend-overlay">
-        <div className="legend-item">
-          <div className="legend-dot low"></div>
-          <span>Low (&lt;40)</span>
-        </div>
-        <div className="legend-item">
-          <div className="legend-dot medium"></div>
-          <span>Medium (40-69)</span>
-        </div>
-        <div className="legend-item">
-          <div className="legend-dot high"></div>
-          <span>{mode === 'flash_flood' ? 'Flood Evac (70+)' : 'High Risk (70+)'}</span>
+      {/* Map Risk Scheme Legend */}
+      <div className="map-legend-overlay" style={{
+        position: 'absolute', bottom: '16px', left: '16px', zIndex: 400,
+        background: 'rgba(15, 23, 42, 0.85)', backdropFilter: 'blur(10px)',
+        border: '1px solid rgba(255,255,255,0.15)', color: '#f8fafc',
+        padding: '10px 14px', borderRadius: '10px', fontSize: '0.75rem'
+      }}>
+        <div style={{ fontWeight: 700, marginBottom: '6px', fontSize: '0.75rem', color: '#94a3b8' }}>RISK LEVEL</div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <span style={{ color: '#10b981' }}>🟢</span> <span>Low (0–40)</span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <span style={{ color: '#f59e0b' }}>🟡</span> <span>Watch (40–60)</span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <span style={{ color: '#f97316' }}>🟠</span> <span>Warning (60–80)</span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <span style={{ color: '#ef4444' }}>🔴</span> <span>Critical (80–100)</span>
+          </div>
         </div>
       </div>
 
       <MapContainer 
-        center={[30.45, 79.45]} 
+        center={indlandsPoint ? [indlandsPoint.lat, indlandsPoint.lng] : [30.45, 79.45]} 
         zoom={11} 
-        style={{ width: '100%', height: '100%', background: '#f1f5f9', borderRadius: '14px' }}
+        style={{ width: '100%', height: '100%', minHeight: '420px', background: '#0f172a', borderRadius: '12px' }}
       >
-
-        <MapController selectedId={selectedId} villages={villages} />
+        <MapController selectedId={selectedId} villages={villages} indlandsPoint={indlandsPoint} />
         
-        {/* Base Map Layer */}
         <TileLayer
           key={currentStyle}
           url={activeStyleConfig.url}
@@ -122,7 +140,6 @@ export default function MapPanel({ villages, selectedId, onSelect, mode = 'lands
           maxZoom={19}
         />
 
-        {/* Reference Labels Overlay Layer for Satellite & Dark modes */}
         {activeStyleConfig.hasOverlay && (
           <TileLayer
             key={`${currentStyle}-overlay`}
@@ -132,130 +149,62 @@ export default function MapPanel({ villages, selectedId, onSelect, mode = 'lands
           />
         )}
 
-        {villages.map(v => {
-          const isSelected = selectedId === v.id;
-          const isSimTarget = simulationActive && simulationTargetId === v.id;
+        {/* Monitored Ward Risk Markers */}
+        {layers.riskZones && villages.map(v => {
+          const isSelected = v.id === selectedId;
+          const isCritical = v.score >= 80;
+          const isWarning = v.score >= 60 && v.score < 80;
+          const isWatch = v.score >= 40 && v.score < 60;
+
+          const color = isCritical ? '#ef4444' : (isWarning ? '#f97316' : (isWatch ? '#f59e0b' : '#10b981'));
+          const symbol = isCritical ? '🚨' : (isWarning ? '🟠' : (isWatch ? '🟡' : '🟢'));
+          const radius = isSelected ? 18 : (isCritical ? 16 : 12);
 
           return (
-            <div key={v.id}>
-              {isSimTarget && (
-                <CircleMarker
-                  center={[v.lat, v.lng]}
-                  radius={34}
-                  fillColor="#dc2626"
-                  color="#dc2626"
-                  weight={2.5}
-                  dashArray="6,6"
-                  opacity={0.85}
-                  fillOpacity={0.15}
-                />
-              )}
-
-              <CircleMarker
-                center={[v.lat, v.lng]}
-                radius={isSelected ? 15 : 11}
-                fillColor={v.cat.hex}
-                color={isSelected ? '#ffffff' : '#000000'}
-                weight={isSelected ? 3.5 : 2}
-                opacity={1}
-                fillOpacity={0.9}
-                eventHandlers={{
-                  click: () => onSelect(v.id),
-                }}
-              >
-                <Popup>
-                  <div className="popup-header">
-                    <span>{v.name}</span>
-                    <span style={{ color: v.cat.hex, fontSize: '0.85rem' }}>{v.cat.label}</span>
+            <CircleMarker
+              key={v.id}
+              center={[v.lat, v.lng]}
+              radius={radius}
+              fillColor={color}
+              color={isSelected ? '#ffffff' : color}
+              weight={isSelected ? 4 : 2}
+              opacity={1}
+              fillOpacity={0.85}
+              eventHandlers={{
+                click: () => onSelect && onSelect(v.id)
+              }}
+            >
+              <Popup>
+                <div style={{ fontFamily: 'sans-serif', padding: '6px', minWidth: '180px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                    <span style={{ fontSize: '1.2rem' }}>{symbol}</span>
+                    <h4 style={{ margin: 0, fontSize: '0.95rem', color: '#0f172a' }}>{v.name}</h4>
                   </div>
-
-                  <div className="popup-metric">
-                    <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                      <ShieldAlert size={12} style={{ color: v.cat.hex }} /> Risk Score
-                    </span>
-                    <strong style={{ color: v.cat.hex }}>{v.score} / 100</strong>
+                  <div style={{
+                    background: `${color}15`,
+                    color: color,
+                    padding: '4px 8px',
+                    borderRadius: '6px',
+                    fontWeight: 700,
+                    fontSize: '0.8rem',
+                    marginBottom: '8px'
+                  }}>
+                    {mode === 'flash_flood' ? 'Flash Flood Risk' : 'Landslide Risk'}: {v.score} / 100 ({v.cat.label})
                   </div>
-                  <div className="popup-progress-bar">
-                    <div 
-                      className="popup-progress-fill" 
-                      style={{ width: `${v.score}%`, backgroundColor: v.cat.hex }}
-                    />
-                  </div>
-
-                  {mode === 'flash_flood' ? (
-                    <>
-                      <div className="popup-metric">
-                        <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                          <Waves size={12} style={{ color: '#38bdf8' }} /> River Level
-                        </span>
-                        <strong>{(v.riverLevel || 1.4).toFixed(2)} m</strong>
-                      </div>
-
-                      <div className="popup-metric">
-                        <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                          <Clock size={12} style={{ color: '#f59e0b' }} /> Evac Lead Time
-                        </span>
-                        <strong style={{ color: (v.leadTimeMins || 45) < 30 ? '#ef4444' : '#f59e0b' }}>
-                          {(v.leadTimeMins || 45) < 99 ? `${v.leadTimeMins || 45} mins` : '120+ mins'}
-                        </strong>
-                      </div>
-
-                      <div className="popup-metric">
-                        <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                          <CloudRain size={12} style={{ color: 'var(--accent-blue)' }} /> Rain Rate
-                        </span>
-                        <strong>{Math.round(v.rain)} mm/hr</strong>
-                      </div>
-                    </>
-                  ) : (
-                    <>
-                      <div className="popup-metric">
-                        <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                          <CloudRain size={12} style={{ color: 'var(--accent-blue)' }} /> Rainfall
-                        </span>
-                        <strong>{Math.round(v.rain)} mm/hr</strong>
-                      </div>
-
-                      <div className="popup-metric">
-                        <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                          <Droplets size={12} style={{ color: 'var(--risk-low)' }} /> Soil Moisture
-                        </span>
-                        <strong>{Math.round(v.moisture)}%</strong>
-                      </div>
-
-                      <div className="popup-metric">
-                        <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                          <Mountain size={12} style={{ color: 'var(--risk-medium)' }} /> Slope Stability
-                        </span>
-                        <strong>{Math.round(v.slope)} Index</strong>
-                      </div>
-                    </>
-                  )}
-
-                  <button 
-                    className="popup-select-btn" 
-                    onClick={() => onSelect(v.id)}
-                    style={{
-                      backgroundColor: isSelected ? 'var(--risk-low)' : 'var(--accent-blue)'
-                    }}
-                  >
-                    {isSelected ? (
-                      <>
-                        <Check size={14} /> Ward Selected
-                      </>
-                    ) : (
-                      <>
-                        <MapPin size={14} /> Select Ward
-                      </>
+                  <div style={{ fontSize: '0.775rem', color: '#475569', display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                    <div><strong>Rainfall:</strong> {Math.round(v.rain)} mm/hr</div>
+                    <div><strong>Soil Moisture:</strong> {Math.round(v.moisture)}%</div>
+                    <div><strong>Slope:</strong> {Math.round(v.slope)}°</div>
+                    {mode === 'flash_flood' && (
+                      <div><strong>River Level:</strong> {(v.riverLevel || 1.4).toFixed(2)} m</div>
                     )}
-                  </button>
-                </Popup>
-              </CircleMarker>
-            </div>
+                  </div>
+                </div>
+              </Popup>
+            </CircleMarker>
           );
         })}
       </MapContainer>
     </div>
   );
 }
-

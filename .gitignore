@@ -11,6 +11,21 @@ node_modules
 dist
 dist-ssr
 *.local
+.env
+.env.*
+
+# Python Cache & Virtual Environments
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+.venv/
+venv/
+
+# Large Raw Dataset CSV Files (>100MB)
+*.csv
+public/*.csv
+public/data/*.csv
 
 # Editor directories and files
 .vscode/*
