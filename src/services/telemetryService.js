@@ -13,7 +13,13 @@ export const SENSOR_NODES = [
   { id: 'IND-S05', name: 'Gopeshwar Inclinometer & Tilt Probe', type: 'Slope Displacement', status: 'ONLINE', battery: 89, lastUpdate: new Date() },
   { id: 'IND-S06', name: 'Pipalkoti Optical Precipitation Sensor', type: 'Rainfall Rate', status: 'ONLINE', battery: 96, lastUpdate: new Date() },
   { id: 'IND-S07', name: 'Urgam Valley Stage Meter', type: 'River Stage', status: 'ONLINE', battery: 92, lastUpdate: new Date() },
-  { id: 'IND-S08', name: 'Helang Soil Saturation Sensor', type: 'Soil Saturation', status: 'ONLINE', battery: 87, lastUpdate: new Date() }
+  { id: 'IND-S08', name: 'Helang Soil Saturation Sensor', type: 'Soil Saturation', status: 'ONLINE', battery: 87, lastUpdate: new Date() },
+  { id: 'IND-S09', name: 'Guwahati Brahmaputra CWC Level Sensor', type: 'River Stage', status: 'ONLINE', battery: 94, lastUpdate: new Date() },
+  { id: 'IND-S10', name: 'Silchar Barak Basin Radar Gauge', type: 'Discharge Flow', status: 'ONLINE', battery: 97, lastUpdate: new Date() },
+  { id: 'IND-S11', name: 'Cherrapunji High Intensity ARG', type: 'Rainfall Rate', status: 'ONLINE', battery: 99, lastUpdate: new Date() },
+  { id: 'IND-S12', name: 'Haflong Landslide Inclinometer Probe', type: 'Slope Displacement', status: 'ONLINE', battery: 90, lastUpdate: new Date() },
+  { id: 'IND-S13', name: 'Majuli Embankment Hydro Sensor', type: 'River Stage', status: 'ONLINE', battery: 93, lastUpdate: new Date() },
+  { id: 'IND-S14', name: 'Gangtok Teesta Acoustic Stage Gauge', type: 'River Stage', status: 'ONLINE', battery: 96, lastUpdate: new Date() }
 ];
 
 export const INITIAL_REALTIME_ALERTS = [
@@ -40,6 +46,30 @@ export const INITIAL_REALTIME_ALERTS = [
     timestamp: new Date(Date.now() - 12 * 60 * 1000).toISOString(),
     triggerData: 'River stage 2.8m approaching danger threshold (4.2m)',
     actionText: 'Issue Community Flood Advisory. Monitor Catchment Runoff.'
+  },
+  {
+    id: 'ALT-1003',
+    villageId: 'v9',
+    villageName: 'Guwahati (Brahmaputra Bank)',
+    hazard: 'Brahmaputra River Inundation',
+    severity: 'CRITICAL',
+    status: 'ACTIVE',
+    riskScore: 84,
+    timestamp: new Date(Date.now() - 6 * 60 * 1000).toISOString(),
+    triggerData: 'Brahmaputra river stage 48.9m approaching danger level (50.5m) + 95 mm/hr rain',
+    actionText: 'Issue Brahmaputra Flood Embankment Warning. Deploy State Disaster Response Force (SDRF).'
+  },
+  {
+    id: 'ALT-1004',
+    villageId: 'v13',
+    villageName: 'Cherrapunji (Sohra Ridge)',
+    hazard: 'Extreme Rainfall & Flash Landslide Surge',
+    severity: 'CRITICAL',
+    status: 'ACTIVE',
+    riskScore: 88,
+    timestamp: new Date(Date.now() - 2 * 60 * 1000).toISOString(),
+    triggerData: 'Extreme precip rate 145 mm/hr + 92% Soil Saturation + 46° steep incline',
+    actionText: 'Trigger High-Altitude Plateau Flash Evacuation Protocol. Mobilize District Emergency Response.'
   }
 ];
 

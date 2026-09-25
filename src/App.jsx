@@ -19,6 +19,7 @@ import { INITIAL_REALTIME_ALERTS, fetchLocationsWithRisk, fetchActiveAlerts } fr
 import { Info } from 'lucide-react';
 
 const INITIAL_VILLAGES = [
+  // Uttarakhand & Himalayan Wards (v1 - v8)
   { 
     id: 'v1', name: 'Joshimath Ward 1', lat: 30.5506, lng: 79.5660, 
     rain: 126, moisture: 87, slope: 41,
@@ -74,6 +75,92 @@ const INITIAL_VILLAGES = [
     riverLevel: 1.3, warningMark: 3.5, dangerMark: 4.6, riverRiseRate: 0.4, discharge: 40,
     shelter: { name: 'Gopeshwar Municipal Stadium Shelter', dist: '0.7 km', elevation: '+80m', capacity: 700, occupancy: '90 Beds Occupied', route: 'District Hospital Main Road' },
     historicalData: { flood10yr: 3.7, flood50yr: 5.1, flood100yr: 6.5, maxHistorical2013: 5.7, maxHistorical2021: 4.8 }
+  },
+
+  // Assam & North-East India Monitored Locations (v9 - v20)
+  {
+    id: 'v9', name: 'Guwahati (Brahmaputra Bank)', lat: 26.1445, lng: 91.7362,
+    rain: 95, moisture: 82, slope: 28,
+    riverLevel: 48.9, warningMark: 49.6, dangerMark: 50.5, riverRiseRate: 0.8, discharge: 4200,
+    shelter: { name: 'Guwahati Cotton University Relief Center', dist: '1.2 km', elevation: '+45m', capacity: 1200, occupancy: '350 Beds Occupied', route: 'Take MG Road Bypass to University Campus' },
+    historicalData: { flood10yr: 50.2, flood50yr: 51.4, flood100yr: 52.8, maxHistorical2013: 51.1, maxHistorical2021: 50.8 }
+  },
+  {
+    id: 'v10', name: 'Silchar (Barak Basin)', lat: 24.8333, lng: 92.7789,
+    rain: 115, moisture: 89, slope: 18,
+    riverLevel: 19.8, warningMark: 19.8, dangerMark: 20.4, riverRiseRate: 1.2, discharge: 1850,
+    shelter: { name: 'Silchar NIT Community Relief Camp', dist: '1.8 km', elevation: '+35m', capacity: 950, occupancy: '420 Beds Occupied', route: 'Take Trunk Road High Ground Bypass' },
+    historicalData: { flood10yr: 20.5, flood50yr: 21.6, flood100yr: 22.4, maxHistorical2013: 21.2, maxHistorical2022: 21.9 }
+  },
+  {
+    id: 'v11', name: 'Majuli River Island', lat: 26.9500, lng: 94.1667,
+    rain: 88, moisture: 84, slope: 8,
+    riverLevel: 86.4, warningMark: 86.5, dangerMark: 87.3, riverRiseRate: 1.4, discharge: 5600,
+    shelter: { name: 'Garmur High Embankment Relief Camp', dist: '0.9 km', elevation: '+15m', capacity: 800, occupancy: '290 Beds Occupied', route: 'Follow Northern Embankment Track' },
+    historicalData: { flood10yr: 87.2, flood50yr: 88.3, flood100yr: 89.1, maxHistorical2013: 87.9, maxHistorical2021: 87.5 }
+  },
+  {
+    id: 'v12', name: 'Haflong (Dima Hasao)', lat: 25.1667, lng: 93.0167,
+    rain: 105, moisture: 86, slope: 42,
+    riverLevel: 3.2, warningMark: 4.0, dangerMark: 5.2, riverRiseRate: 2.1, discharge: 310,
+    shelter: { name: 'Haflong District Sports Complex Shelter', dist: '0.7 km', elevation: '+510m', capacity: 500, occupancy: '110 Beds Occupied', route: 'Haflong Ridge Bypass Track' },
+    historicalData: { flood10yr: 4.8, flood50yr: 6.0, flood100yr: 7.2, maxHistorical2013: 5.5, maxHistorical2022: 6.8 }
+  },
+  {
+    id: 'v13', name: 'Cherrapunji (Sohra Ridge)', lat: 25.2833, lng: 91.7333,
+    rain: 145, moisture: 92, slope: 46,
+    riverLevel: 4.5, warningMark: 5.0, dangerMark: 6.5, riverRiseRate: 3.8, discharge: 840,
+    shelter: { name: 'Sohra Civil Hospital High Altitude Camp', dist: '1.1 km', elevation: '+1430m', capacity: 650, occupancy: '210 Beds Occupied', route: 'Take Upper Plateau Bypass 2' },
+    historicalData: { flood10yr: 6.2, flood50yr: 7.8, flood100yr: 9.1, maxHistorical2013: 7.1, maxHistorical2020: 8.4 }
+  },
+  {
+    id: 'v14', name: 'Gangtok (Teesta Basin)', lat: 27.3389, lng: 88.6065,
+    rain: 76, moisture: 79, slope: 45,
+    riverLevel: 3.8, warningMark: 4.5, dangerMark: 5.8, riverRiseRate: 2.4, discharge: 620,
+    shelter: { name: 'Gangtok Paljor Stadium Relief Center', dist: '0.8 km', elevation: '+1650m', capacity: 900, occupancy: '180 Beds Occupied', route: 'National Highway 10 Ridge Corridor' },
+    historicalData: { flood10yr: 5.2, flood50yr: 6.8, flood100yr: 8.1, maxHistorical2013: 6.1, maxHistorical2023: 7.6 }
+  },
+  {
+    id: 'v15', name: 'Aizawl (Slope Ward)', lat: 23.7271, lng: 92.7176,
+    rain: 68, moisture: 72, slope: 43,
+    riverLevel: 2.2, warningMark: 3.8, dangerMark: 4.8, riverRiseRate: 1.1, discharge: 190,
+    shelter: { name: 'Aizawl Assam Rifles High Ground Camp', dist: '1.3 km', elevation: '+1130m', capacity: 700, occupancy: '95 Beds Occupied', route: 'Khatla Ridge Track' },
+    historicalData: { flood10yr: 4.1, flood50yr: 5.4, flood100yr: 6.8, maxHistorical2013: 4.9, maxHistorical2022: 5.8 }
+  },
+  {
+    id: 'v16', name: 'Itanagar (Dikrong Valley)', lat: 27.0844, lng: 93.6053,
+    rain: 85, moisture: 77, slope: 39,
+    riverLevel: 3.1, warningMark: 4.2, dangerMark: 5.5, riverRiseRate: 1.8, discharge: 480,
+    shelter: { name: 'Itanagar Indira Gandhi Park Shelter', dist: '1.0 km', elevation: '+320m', capacity: 600, occupancy: '130 Beds Occupied', route: 'Bank Tinali Ridge Expressway' },
+    historicalData: { flood10yr: 4.6, flood50yr: 5.9, flood100yr: 7.1, maxHistorical2013: 5.2, maxHistorical2021: 6.1 }
+  },
+  {
+    id: 'v17', name: 'Kohima (Ridge Ward)', lat: 25.6701, lng: 94.1077,
+    rain: 62, moisture: 68, slope: 40,
+    riverLevel: 1.8, warningMark: 3.2, dangerMark: 4.2, riverRiseRate: 0.9, discharge: 140,
+    shelter: { name: 'Kohima Local Ground High Relief Shelter', dist: '0.6 km', elevation: '+1440m', capacity: 500, occupancy: '70 Beds Occupied', route: 'Secretariat Road Bypass' },
+    historicalData: { flood10yr: 3.5, flood50yr: 4.8, flood100yr: 6.0, maxHistorical2013: 4.1, maxHistorical2020: 5.2 }
+  },
+  {
+    id: 'v18', name: 'Agartala (Haora Basin)', lat: 23.8315, lng: 91.2868,
+    rain: 72, moisture: 75, slope: 14,
+    riverLevel: 10.2, warningMark: 10.8, dangerMark: 11.5, riverRiseRate: 1.0, discharge: 520,
+    shelter: { name: 'Agartala Umakanta Academy Shelter', dist: '1.5 km', elevation: '+28m', capacity: 850, occupancy: '240 Beds Occupied', route: 'VVIP Road High Embankment' },
+    historicalData: { flood10yr: 11.0, flood50yr: 12.1, flood100yr: 13.2, maxHistorical2013: 11.6, maxHistorical2024: 12.4 }
+  },
+  {
+    id: 'v19', name: 'Imphal (Imphal Valley)', lat: 24.8170, lng: 93.9368,
+    rain: 90, moisture: 81, slope: 22,
+    riverLevel: 785.2, warningMark: 786.0, dangerMark: 787.2, riverRiseRate: 1.5, discharge: 740,
+    shelter: { name: 'Imphal Kangla Fort High Ground Camp', dist: '1.1 km', elevation: '+786m', capacity: 1000, occupancy: '310 Beds Occupied', route: 'Palace Compound Bypass Road' },
+    historicalData: { flood10yr: 786.8, flood50yr: 788.0, flood100yr: 789.5, maxHistorical2013: 787.4, maxHistorical2024: 788.6 }
+  },
+  {
+    id: 'v20', name: 'Kaziranga (Floodplain Ward)', lat: 26.5775, lng: 93.1711,
+    rain: 110, moisture: 88, slope: 10,
+    riverLevel: 74.8, warningMark: 75.0, dangerMark: 75.8, riverRiseRate: 2.2, discharge: 4900,
+    shelter: { name: 'Kohora High Ridge Wildlife Relief Shelter', dist: '1.4 km', elevation: '+65m', capacity: 750, occupancy: '380 Beds Occupied', route: 'NH-37 Southern High Ridge Road' },
+    historicalData: { flood10yr: 75.6, flood50yr: 76.8, flood100yr: 77.9, maxHistorical2013: 76.2, maxHistorical2020: 76.9 }
   }
 ];
 
@@ -216,9 +303,17 @@ export default function App() {
           villages={villages} 
           alerts={alerts} 
           mode={activeMode} 
+          onModeChange={setActiveMode}
           lastUpdatedTime={lastUpdatedTime}
           searchQuery={searchQuery}
           onSearchChange={setSearchQuery}
+          onSelectVillage={(id) => {
+            setSelectedVillageId(id);
+            setActivePage('dashboard');
+          }}
+          onRefreshData={handleRefreshTelemetry}
+          theme={theme}
+          onToggleTheme={handleToggleTheme}
         />
 
         {/* Content Body View Wrapped in ErrorBoundary */}

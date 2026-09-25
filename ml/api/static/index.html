@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hyper-Local Landslide & Flash-Flood Early Warning System</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Top Navigation Bar -->
+        <header class="navbar">
+            <div class="brand">
+                <div class="brand-icon">⚡</div>
+                <div>
+                    <h1>BHU-RAKSHAK Early Warning System</h1>
+                    <p class="subtitle">Hyper-Local Disaster Prediction Engine • SVM RBF Pipeline</p>
+                </div>
+            </div>
+            <div class="nav-right">
+                <div class="dataset-badge">
+                    <span class="badge-dot"></span>
+                    <span>Dataset: HF DataUploader/IndLands</span>
+                </div>
+                <div class="iot-status-pill active" id="iotStatusPill">
+                    <span class="pill-pulse"></span>
+                    <span id="iotStatusText">● LIVE TELEMETRY: Open-Meteo Connected</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Dashboard Content Grid -->
+        <main class="dashboard-grid">
+            
+            <!-- Left Column: Controls & Real-Time Location Inputs -->
+            <section class="card controls-card">
+                <div class="card-header">
+                    <h2>📍 Location & Real-Time Telemetry Inputs</h2>
+                    <p>Configure geospatial, terrain & real-time Open-Meteo sensor attributes</p>
+                </div>
+
+                <!-- Region Selector -->
+                <div class="input-group">
+                    <label for="locationSelect">Select Target Location (Real-Time Telemetry Stream)</label>
+                    <select id="locationSelect" class="custom-select">
+                        <option value="30.5506,79.5660" selected>Uttarakhand • Joshimath / Chamoli (Live Telemetry)</option>
+                        <option value="31.1048,77.1734">Himachal Pradesh • Shimla Slope Zone (Live Telemetry)</option>
+                        <option value="17.9237,73.6586">Maharashtra • Mahabaleshwar Ghats (Live Telemetry)</option>
+                        <option value="12.4244,75.7382">Karnataka • Kodagu / Coorg Hills (Live Telemetry)</option>
+                        <option value="27.3389,88.6065">Sikkim • Gangtok Valley (Live Telemetry)</option>
+                        <option value="custom">Custom Location / Coordinate Stream</option>
+                    </select>
+                </div>
+
+                <!-- Latitude & Longitude -->
+                <div class="grid-2col">
+                    <div class="input-group">
+                        <label>Latitude (°N)</label>
+                        <input type="number" id="latInput" value="30.5506" step="0.0001" class="custom-input">
+                    </div>
+                    <div class="input-group">
+                        <label>Longitude (°E)</label>
+                        <input type="number" id="lngInput" value="79.5660" step="0.0001" class="custom-input">
+                    </div>
+                </div>
+
+                <hr class="divider">
+
+                <!-- Interactive Feature Sliders -->
+                <div class="slider-group">
+                    <div class="slider-header">
+                        <label for="slopeSlider">Terrain Slope Angle (°)</label>
+                        <span id="slopeVal" class="val-tag">42.0°</span>
+                    </div>
+                    <input type="range" id="slopeSlider" min="0" max="85" value="42" step="0.5" class="custom-range">
+                    <div class="slider-subtext">Steep slopes (>30°) heavily increase gravity shear stress</div>
+                </div>
+
+                <div class="slider-group">
+                    <div class="slider-header">
+                        <label for="elevationSlider">Elevation (meters MSL)</label>
+                        <span id="elevationVal" class="val-tag">2100 m</span>
+                    </div>
+                    <input type="range" id="elevationSlider" min="0" max="5000" value="2100" step="10" class="custom-range">
+                </div>
+
+                <div class="slider-group">
+                    <div class="slider-header">
+                        <label for="ndviSlider">Vegetation Index (NDVI)</label>
+                        <span id="ndviVal" class="val-tag">0.15</span>
+                    </div>
+                    <input type="range" id="ndviSlider" min="-0.2" max="0.8" value="0.15" step="0.01" class="custom-range">
+                    <div class="slider-subtext">Low vegetation (< 0.25) signifies deforested / eroded slope</div>
+                </div>
+
+                <div class="slider-group">
+                    <div class="slider-header">
+                        <label for="twiSlider">Topographic Wetness (TWI)</label>
+                        <span id="twiVal" class="val-tag">6.50</span>
+                    </div>
+                    <input type="range" id="twiSlider" min="-1.0" max="15.0" value="6.50" step="0.1" class="custom-range">
+                </div>
+
+                <hr class="divider">
+
+                <!-- IoT Live Telemetry Stream Integration -->
+                <div class="iot-simulation-box">
+                    <div class="iot-box-header">
+                        <div>
+                            <h3>📡 Live Meteorological Telemetry Integration</h3>
+                            <p>Real-time Open-Meteo precipitation & soil moisture data stream</p>
+                        </div>
+                        <label class="switch">
+                            <input type="checkbox" id="iotToggle" checked>
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
+
+                    <div id="iotControls" class="iot-inputs">
+                        <div class="slider-group">
+                            <div class="slider-header">
+                                <label for="rainfallSlider">Live Rainfall Rate (mm/h)</label>
+                                <span id="rainfallVal" class="val-tag highlight-blue">0 mm/h</span>
+                            </div>
+                            <input type="range" id="rainfallSlider" min="0" max="300" value="0" step="1" class="custom-range range-blue">
+                        </div>
+
+                        <div class="slider-group">
+                            <div class="slider-header">
+                                <label for="moistureSlider">Soil Moisture Saturation (%)</label>
+                                <span id="moistureVal" class="val-tag highlight-teal">65 %</span>
+                            </div>
+                            <input type="range" id="moistureSlider" min="0" max="100" value="65" step="1" class="custom-range range-teal">
+                        </div>
+                        <div class="sim-note">Note: Live telemetry stream automatically synchronizes precipitation and soil moisture metrics.</div>
+                    </div>
+                </div>
+
+                <button id="predictBtn" class="primary-btn">
+                    <span>Run SVM Risk Prediction</span>
+                    <span class="btn-icon">➔</span>
+                </button>
+            </section>
+
+            <!-- Right Column: Risk Output & Dashboard Monitor -->
+            <section class="card output-card">
+                
+                <!-- Main Risk Alert Banner -->
+                <div class="risk-banner" id="riskBanner">
+                    <div class="risk-badge-large" id="riskLevelBadge">
+                        <span class="risk-dot"></span>
+                        <span id="riskLevelText">HIGH RISK</span>
+                    </div>
+                    <div class="confidence-circle">
+                        <div class="conf-score" id="riskPercent">91.4%</div>
+                        <div class="conf-label">Disaster Probability</div>
+                    </div>
+                </div>
+
+                <!-- Early Warning Message -->
+                <div class="warning-alert-box" id="warningBox">
+                    <div class="alert-icon">⚠️</div>
+                    <div class="alert-content">
+                        <h4 id="actionTitle">CRITICAL WARNING - EVACUATION PREPARATION REQUIRED</h4>
+                        <p id="warningText">High probability of slope instability and debris movement. Authorities recommend alerting downstream wards.</p>
+                    </div>
+                </div>
+
+                <!-- Key Metrics Cards -->
+                <div class="metrics-grid">
+                    <div class="metric-card">
+                        <span class="m-label">SVM Model Confidence</span>
+                        <span class="m-val" id="confidenceVal">0.91</span>
+                        <span class="m-sub">Probability Output</span>
+                    </div>
+                    <div class="metric-card">
+                        <span class="m-label">Primary Vulnerability</span>
+                        <span class="m-val text-amber" id="primaryFactor">Steep Slope + Wet Soil</span>
+                        <span class="m-sub">Engineered Interaction</span>
+                    </div>
+                    <div class="metric-card">
+                        <span class="m-label">Safety Status Code</span>
+                        <span class="m-val code-font" id="actionCode">EVACUATE_READY</span>
+                        <span class="m-sub">Protocol Level</span>
+                    </div>
+                </div>
+
+                <!-- Feature Breakdown Table -->
+                <div class="card-section">
+                    <h3>📊 Model Feature Vector & Pipeline Input</h3>
+                    <table class="feature-table">
+                        <thead>
+                            <tr>
+                                <th>Feature Attribute</th>
+                                <th>Measured Value</th>
+                                <th>Risk Influence Contribution</th>
+                            </tr>
+                        </thead>
+                        <tbody id="featureTableBody">
+                            <tr>
+                                <td>Terrain Slope Angle</td>
+                                <td><code id="tableSlope">35.0°</code></td>
+                                <td><span class="pill pill-high">High Risk Factor</span></td>
+                            </tr>
+                            <tr>
+                                <td>Elevation (MSL)</td>
+                                <td><code id="tableElevation">1850 m</code></td>
+                                <td><span class="pill pill-med">Medium Influence</span></td>
+                            </tr>
+                            <tr>
+                                <td>Vegetation Index (NDVI)</td>
+                                <td><code id="tableNdvi">0.22</code></td>
+                                <td><span class="pill pill-high">Sparse Canopy Cover</span></td>
+                            </tr>
+                            <tr>
+                                <td>Topographic Wetness (TWI)</td>
+                                <td><code id="tableTwi">4.50</code></td>
+                                <td><span class="pill pill-med">Moderate Accumulation</span></td>
+                            </tr>
+                            <tr>
+                                <td>Live Rainfall Rate</td>
+                                <td><code id="tableRainfall">125 mm/h</code></td>
+                                <td><span class="pill pill-high" id="tableRainPill">Heavy Precip</span></td>
+                            </tr>
+                            <tr>
+                                <td>Soil Moisture Saturation</td>
+                                <td><code id="tableMoisture">82 %</code></td>
+                                <td><span class="pill pill-high" id="tableMoistPill">Saturated Soil</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Architecture & Safety Notes -->
+                <div class="safety-footer-box">
+                    <div class="footer-title">🛡️ Prototype Architecture & Safety Protocol</div>
+                    <p>
+                        This prediction engine utilizes a scikit-learn pipeline (Feature Engineering → Median Imputation → StandardScaler → SVM RBF Kernel with Balanced Class Weights) trained on Hugging Face <code>DataUploader/IndLands</code> geospatial remote sensing dataset.
+                    </p>
+                    <div class="safety-disclaimer">
+                        <strong>Important Scientific Disclaimer:</strong> Prototype warning system for research & demonstration. Real-world emergency evacuations must align with official IMD and National Disaster Management Authority (NDMA) alerts.
+                    </div>
+                </div>
+
+            </section>
+
+        </main>
+    </div>
+
+    <script src="main.js"></script>
+</body>
+</html>

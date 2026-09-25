@@ -1,6 +1,6 @@
 import { MapContainer, TileLayer, CircleMarker, Popup, useMap } from 'react-leaflet';
 import { useEffect, useRef, useState } from 'react';
-import { MapPin, Layers, Compass, Waves, ShieldAlert } from 'lucide-react';
+import { MapPin, Layers, Compass, Waves, ShieldAlert, Globe } from 'lucide-react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { getDataFreshnessBadge } from '../services/telemetryService';
@@ -13,24 +13,37 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
 });
 
-function MapController({ selectedId, villages, indlandsPoint }) {
+function MapController({ selectedId, villages, visibleVillages, indlandsPoint, activeRegion }) {
   const map = useMap();
-  const villagesRef = useRef(villages);
+  const prevSelectedRef = useRef(null);
 
+  // 1. Zoom to region bounds when activeRegion or indlandsPoint changes
   useEffect(() => {
-    villagesRef.current = villages;
-  }, [villages]);
+    if (!map) return;
+    if (indlandsPoint) {
+      map.flyTo([indlandsPoint.lat, indlandsPoint.lng], 13, { duration: 1.2 });
+      return;
+    }
 
-  useEffect(() => {
-    if (indlandsPoint && map) {
-      map.flyTo([indlandsPoint.lat, indlandsPoint.lng], 13, { duration: 1 });
-    } else if (selectedId && map) {
-      const v = villagesRef.current.find(v => v.id === selectedId);
-      if (v) {
-        map.flyTo([v.lat, v.lng], 13, { duration: 1 });
+    if (visibleVillages && visibleVillages.length > 0) {
+      const bounds = L.latLngBounds(visibleVillages.map(v => [v.lat, v.lng]));
+      if (bounds.isValid()) {
+        map.fitBounds(bounds, { padding: [50, 50], maxZoom: activeRegion === 'all' ? 6 : 9, duration: 1.2 });
       }
     }
-  }, [selectedId, indlandsPoint, map]);
+  }, [map, activeRegion, visibleVillages, indlandsPoint]);
+
+  // 2. Fly to specific location when selectedId changes
+  useEffect(() => {
+    if (!map || !selectedId) return;
+    if (prevSelectedRef.current === selectedId) return;
+    prevSelectedRef.current = selectedId;
+
+    const v = villages.find(item => item.id === selectedId);
+    if (v) {
+      map.flyTo([v.lat, v.lng], 12, { duration: 1 });
+    }
+  }, [map, selectedId, villages]);
 
   return null;
 }
@@ -62,7 +75,7 @@ const MAP_STYLES = {
 };
 
 export default function MapPanel({ 
-  villages, 
+  villages = [], 
   selectedId, 
   onSelect, 
   mode = 'landslide',
@@ -70,6 +83,7 @@ export default function MapPanel({
   lastUpdatedTime
 }) {
   const [currentStyle, setCurrentStyle] = useState('satellite');
+  const [activeRegion, setActiveRegion] = useState('all'); // 'all' | 'ne' | 'uk'
   const [layers, setLayers] = useState({
     riskZones: true,
     sensors: true,
@@ -80,25 +94,112 @@ export default function MapPanel({
   const activeStyleConfig = MAP_STYLES[currentStyle];
   const freshness = getDataFreshnessBadge(lastUpdatedTime);
 
-  const toggleLayer = (layerKey) => {
-    setLayers(prev => ({ ...prev, [layerKey]: !prev[layerKey] }));
+  const neCount = villages.filter(v => v.lng > 85).length;
+  const ukCount = villages.filter(v => v.lng <= 85).length;
+
+  const visibleVillages = activeRegion === 'ne'
+    ? villages.filter(v => v.lng > 85)
+    : activeRegion === 'uk'
+    ? villages.filter(v => v.lng <= 85)
+    : villages;
+
+  const handleRegionChange = (regionKey) => {
+    setActiveRegion(regionKey);
+    const targetList = regionKey === 'ne'
+      ? villages.filter(v => v.lng > 85)
+      : regionKey === 'uk'
+      ? villages.filter(v => v.lng <= 85)
+      : villages;
+
+    if (targetList.length > 0) {
+      const isCurrentlyVisible = targetList.some(v => v.id === selectedId);
+      if (!isCurrentlyVisible && onSelect) {
+        onSelect(targetList[0].id);
+      }
+    }
   };
 
   return (
     <div className="panel map-panel" style={{ position: 'relative', height: '100%', flex: 1, display: 'flex', flexDirection: 'column' }}>
-      {/* Map Overlay Header */}
+      {/* Map Overlay Header & Region Switcher */}
       <div className="map-overlay-header" style={{
-        position: 'absolute', top: '12px', left: '16px', zIndex: 400,
-        display: 'flex', alignItems: 'center', gap: '10px'
+        position: 'absolute', top: '12px', left: '16px', right: '16px', zIndex: 400,
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px'
       }}>
         <div className="map-overlay-pill" style={{
-          background: 'rgba(15, 23, 42, 0.85)', backdropFilter: 'blur(10px)',
+          background: 'rgba(15, 23, 42, 0.88)', backdropFilter: 'blur(10px)',
           border: '1px solid rgba(255,255,255,0.15)', color: '#fff',
           padding: '6px 14px', borderRadius: '20px', fontSize: '0.8rem', fontWeight: 600,
           display: 'flex', alignItems: 'center', gap: '8px'
         }}>
           {mode === 'flash_flood' ? <Waves size={14} color="#38bdf8" /> : <ShieldAlert size={14} color="#ef4444" />}
           <span>Spatial Operations Map • {mode === 'flash_flood' ? 'Flash Flood & River Stage' : 'Landslide Susceptibility'}</span>
+        </div>
+
+        {/* Region View Jump Pills */}
+        <div style={{
+          display: 'flex',
+          gap: '4px',
+          background: 'rgba(15, 23, 42, 0.88)',
+          backdropFilter: 'blur(10px)',
+          border: '1px solid rgba(255,255,255,0.15)',
+          padding: '3px',
+          borderRadius: '20px'
+        }}>
+          <button
+            type="button"
+            onClick={() => handleRegionChange('all')}
+            title="Show all monitored locations across India"
+            style={{
+              padding: '4px 10px',
+              borderRadius: '14px',
+              border: 'none',
+              fontSize: '0.72rem',
+              fontWeight: 700,
+              cursor: 'pointer',
+              background: activeRegion === 'all' ? '#0284c7' : 'transparent',
+              color: activeRegion === 'all' ? '#ffffff' : '#94a3b8',
+              transition: 'all 0.15s ease'
+            }}
+          >
+            🇮🇳 All India ({villages.length})
+          </button>
+          <button
+            type="button"
+            onClick={() => handleRegionChange('ne')}
+            title="Focus on Assam & North-East India"
+            style={{
+              padding: '4px 10px',
+              borderRadius: '14px',
+              border: 'none',
+              fontSize: '0.72rem',
+              fontWeight: 700,
+              cursor: 'pointer',
+              background: activeRegion === 'ne' ? '#0284c7' : 'transparent',
+              color: activeRegion === 'ne' ? '#ffffff' : '#94a3b8',
+              transition: 'all 0.15s ease'
+            }}
+          >
+            🌿 Assam & NE ({neCount})
+          </button>
+          <button
+            type="button"
+            onClick={() => handleRegionChange('uk')}
+            title="Focus on Garhwal Himalayas / Uttarakhand"
+            style={{
+              padding: '4px 10px',
+              borderRadius: '14px',
+              border: 'none',
+              fontSize: '0.72rem',
+              fontWeight: 700,
+              cursor: 'pointer',
+              background: activeRegion === 'uk' ? '#0284c7' : 'transparent',
+              color: activeRegion === 'uk' ? '#ffffff' : '#94a3b8',
+              transition: 'all 0.15s ease'
+            }}
+          >
+            🏔️ Uttarakhand ({ukCount})
+          </button>
         </div>
       </div>
 
@@ -127,11 +228,17 @@ export default function MapPanel({
       </div>
 
       <MapContainer 
-        center={indlandsPoint ? [indlandsPoint.lat, indlandsPoint.lng] : [30.45, 79.45]} 
-        zoom={11} 
+        center={indlandsPoint ? [indlandsPoint.lat, indlandsPoint.lng] : [26.0, 87.0]} 
+        zoom={6} 
         style={{ width: '100%', height: '100%', minHeight: '420px', background: '#0f172a', borderRadius: '12px' }}
       >
-        <MapController selectedId={selectedId} villages={villages} indlandsPoint={indlandsPoint} />
+        <MapController 
+          selectedId={selectedId} 
+          villages={villages} 
+          visibleVillages={visibleVillages}
+          indlandsPoint={indlandsPoint} 
+          activeRegion={activeRegion}
+        />
         
         <TileLayer
           key={currentStyle}
@@ -150,7 +257,7 @@ export default function MapPanel({
         )}
 
         {/* Monitored Ward Risk Markers */}
-        {layers.riskZones && villages.map(v => {
+        {layers.riskZones && visibleVillages.map(v => {
           const isSelected = v.id === selectedId;
           const isCritical = v.score >= 80;
           const isWarning = v.score >= 60 && v.score < 80;
@@ -189,7 +296,7 @@ export default function MapPanel({
                     fontSize: '0.8rem',
                     marginBottom: '8px'
                   }}>
-                    {mode === 'flash_flood' ? 'Flash Flood Risk' : 'Landslide Risk'}: {v.score} / 100 ({v.cat.label})
+                    {mode === 'flash_flood' ? 'Flash Flood Risk' : 'Landslide Risk'}: {v.score} / 100 ({v.cat?.label || 'WATCH'})
                   </div>
                   <div style={{ fontSize: '0.775rem', color: '#475569', display: 'flex', flexDirection: 'column', gap: '2px' }}>
                     <div><strong>Rainfall:</strong> {Math.round(v.rain)} mm/hr</div>
@@ -208,3 +315,4 @@ export default function MapPanel({
     </div>
   );
 }
+

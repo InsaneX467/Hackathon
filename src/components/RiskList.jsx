@@ -1,11 +1,12 @@
-import { useState } from 'react';
-import { Search, MapPin, CloudRain, Droplets, Mountain, ShieldAlert, Waves, Clock, Navigation, Home, History, ExternalLink, ShieldCheck } from 'lucide-react';
+import { useState, useRef } from 'react';
+import { Search, MapPin, CloudRain, Droplets, Mountain, ShieldAlert, Waves, Clock, Navigation, Home, History, ExternalLink, ShieldCheck, X } from 'lucide-react';
 import { formatDataAgeSeconds } from '../services/dataStatusService';
 
 export default function RiskList({ villages = [], selectedId, onSelect, onFocusMap, mode = 'landslide' }) {
   const [search, setSearch] = useState('');
   const [filterCat, setFilterCat] = useState('ALL');
   const [activeSubTab, setActiveSubTab] = useState('dossier'); // 'dossier' | 'shelter' | 'history'
+  const searchInputRef = useRef(null);
 
   // Standardize filter category matching
   const filteredVillages = villages.filter(v => {
@@ -39,14 +40,14 @@ export default function RiskList({ villages = [], selectedId, onSelect, onFocusM
           <div>
             <h1 style={{ fontSize: '1.35rem', fontWeight: 800, margin: 0, color: '#0f172a' }}>Monitored Wards & Regional Risk Matrix</h1>
             <p style={{ color: '#64748b', fontSize: '0.82rem', margin: '2px 0 0 0' }}>
-              Real-time hydro-meteorological hazard assessments and disaster shelter routing across 8 Himalayan wards
+              Real-time hydro-meteorological hazard assessments and disaster shelter routing across {villages.length} Himalayan & North-East wards
             </p>
           </div>
         </div>
 
         <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
           <span style={{ fontSize: '0.78rem', color: '#64748b', fontWeight: 600, background: '#ffffff', padding: '6px 12px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
-            8 of 8 Wards Monitored
+            {villages.length} of {villages.length} Wards Monitored
           </span>
         </div>
       </div>
@@ -60,18 +61,55 @@ export default function RiskList({ villages = [], selectedId, onSelect, onFocusM
           {/* Search Box & Filter Pills */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
             <div style={{ position: 'relative', width: '100%' }}>
-              <Search size={16} color="#64748b" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)' }} />
+              <button
+                type="button"
+                onClick={() => {
+                  if (sortedVillages.length > 0) {
+                    onSelect(sortedVillages[0].id);
+                  } else {
+                    searchInputRef.current?.focus();
+                  }
+                }}
+                title="Click to select top matching location"
+                style={{
+                  position: 'absolute', left: '8px', top: '50%', transform: 'translateY(-50%)',
+                  background: 'transparent', border: 'none', cursor: 'pointer', padding: '4px',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center'
+                }}
+              >
+                <Search size={16} color="#0284c7" />
+              </button>
               <input
+                ref={searchInputRef}
                 type="text"
                 placeholder="Search ward or location..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && sortedVillages.length > 0) {
+                    onSelect(sortedVillages[0].id);
+                  }
+                }}
                 style={{
-                  width: '100%', padding: '8px 12px 8px 36px', borderRadius: '8px',
+                  width: '100%', padding: '8px 32px 8px 36px', borderRadius: '8px',
                   border: '1px solid #e2e8f0', fontSize: '0.82rem', background: '#f8fafc',
                   outline: 'none', color: '#0f172a'
                 }}
               />
+              {search && (
+                <button
+                  type="button"
+                  onClick={() => setSearch('')}
+                  title="Clear search"
+                  style={{
+                    position: 'absolute', right: '8px', top: '50%', transform: 'translateY(-50%)',
+                    background: 'transparent', border: 'none', cursor: 'pointer', padding: '4px',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center'
+                  }}
+                >
+                  <X size={14} color="#64748b" />
+                </button>
+              )}
             </div>
 
             {/* Standard Filter Pills */}

@@ -9,33 +9,64 @@ Enforces strict feature schema alignment and separates Risk Score from Probabili
 """
 
 import os
+import sys
 import joblib
 import pandas as pd
 import numpy as np
 from config.thresholds import RISK_THRESHOLDS
 
-MODEL_PATH = os.path.join(os.path.dirname(__file__), "../indlands_rf_model.joblib")
+# Ensure workspace root is in sys.path
+PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../.."))
+if PROJECT_ROOT not in sys.path:
+    sys.path.insert(0, PROJECT_ROOT)
+
+MODEL_PATH_XGB = os.path.join(os.path.dirname(__file__), "../../../ml/models/landslide_xgb_pipeline.pkl")
+MODEL_PATH_SVM = os.path.join(os.path.dirname(__file__), "../../../ml/models/landslide_svm_pipeline.pkl")
+MODEL_PATH_RF = os.path.join(os.path.dirname(__file__), "../indlands_rf_model.joblib")
 
 _model = None
 _model_features = []
+_model_name = "IndLands ML Model"
 
 def load_landslide_model():
-    global _model, _model_features
+    global _model, _model_features, _model_name
     if _model is not None:
         return _model, _model_features
 
-    if os.path.exists(MODEL_PATH):
+    # 1. Try XGBoost pipeline
+    if os.path.exists(MODEL_PATH_XGB):
         try:
-            saved = joblib.load(MODEL_PATH)
+            _model = joblib.load(MODEL_PATH_XGB)
+            _model_name = "IndLands XGBoost Pipeline (v2.0)"
+            print(f"[LandslideService] Loaded XGBoost model from {MODEL_PATH_XGB}")
+            return _model, _model_features
+        except Exception as e:
+            print(f"[LandslideService] Error loading XGBoost model: {e}")
+
+    # 2. Try SVM pipeline
+    if os.path.exists(MODEL_PATH_SVM):
+        try:
+            _model = joblib.load(MODEL_PATH_SVM)
+            _model_name = "IndLands SVM Pipeline (v1.0)"
+            print(f"[LandslideService] Loaded SVM model from {MODEL_PATH_SVM}")
+            return _model, _model_features
+        except Exception as e:
+            print(f"[LandslideService] Error loading SVM model: {e}")
+
+    # 3. Fallback to RF model
+    if os.path.exists(MODEL_PATH_RF):
+        try:
+            saved = joblib.load(MODEL_PATH_RF)
             if isinstance(saved, dict):
                 _model = saved.get("model")
                 _model_features = saved.get("features", [])
             else:
                 _model = saved
                 _model_features = []
-            print(f"[LandslideService] Loaded ML model from {MODEL_PATH} ({len(_model_features)} features)")
+            _model_name = "IndLands Random Forest Model"
+            print(f"[LandslideService] Loaded Random Forest model from {MODEL_PATH_RF} ({len(_model_features)} features)")
         except Exception as e:
-            print(f"[LandslideService] Error loading ML model: {e}")
+            print(f"[LandslideService] Error loading RF model: {e}")
     return _model, _model_features
 
 

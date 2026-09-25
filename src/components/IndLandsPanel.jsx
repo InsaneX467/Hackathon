@@ -13,6 +13,7 @@ export default function IndLandsPanel({ onSelectPointOnMap }) {
   const [activeTab, setActiveTab] = useState('explorer'); // 'explorer' | 'ml_predict' | 'code'
 
   // ML Predictor Local State
+  const [selectedModelType, setSelectedModelType] = useState('xgb'); // 'xgb' | 'rf' | 'svm'
   const [predSlope, setPredSlope] = useState(45);
   const [predTwi, setPredTwi] = useState(6.2);
   const [predNdvi, setPredNdvi] = useState(0.28);
@@ -131,7 +132,8 @@ export default function IndLandsPanel({ onSelectPointOnMap }) {
                 twi: predTwi,
                 ndvi: predNdvi,
                 tri: predTri,
-                bsi: predBsi
+                bsi: predBsi,
+                model_type: selectedModelType
               })
             });
             if (res.ok) {
@@ -598,39 +600,74 @@ export default function IndLandsPanel({ onSelectPointOnMap }) {
       {/* TAB 2: PYTHON ML SUSCEPTIBILITY MODEL */}
       {activeTab === 'ml_predict' && (
         <div style={{ background: 'var(--bg-card)', borderRadius: '12px', border: '1px solid var(--border-color)', padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          <div>
-            <h3 style={{ fontSize: '1rem', fontWeight: 700, margin: 0, color: 'var(--text-primary)' }}>
-              Trained Machine Learning Model (IndLands Benchmark)
-            </h3>
-            <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', margin: '4px 0 0 0' }}>
-              Random Forest Classifier trained on 285,975 multi-modal satellite remote sensing records from DataUploader/IndLands.
-            </p>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
+            <div>
+              <h3 style={{ fontSize: '1rem', fontWeight: 700, margin: 0, color: 'var(--text-primary)' }}>
+                Trained Machine Learning Model (IndLands Benchmark)
+              </h3>
+              <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', margin: '4px 0 0 0' }}>
+                Multi-model inference engine supporting XGBoost, Random Forest, and Support Vector Machines.
+              </p>
+            </div>
+
+            {/* Model Architecture Switcher Buttons */}
+            <div style={{ display: 'flex', gap: '8px', background: 'var(--bg-secondary)', padding: '4px', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
+              {[
+                { id: 'xgb', name: 'XGBoost GBDT', badge: '96.73%', color: '#10b981' },
+                { id: 'rf', name: 'Random Forest', badge: '97.88%', color: '#38bdf8' },
+                { id: 'svm', name: 'SVM RBF', badge: '87.88%', color: '#a855f7' }
+              ].map(m => (
+                <button
+                  key={m.id}
+                  onClick={() => setSelectedModelType(m.id)}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: '6px',
+                    padding: '6px 12px', borderRadius: '6px', border: 'none',
+                    background: selectedModelType === m.id ? 'var(--accent-blue)' : 'transparent',
+                    color: selectedModelType === m.id ? '#ffffff' : 'var(--text-muted)',
+                    fontWeight: 700, fontSize: '0.78rem', cursor: 'pointer',
+                    transition: 'all 0.15s ease'
+                  }}
+                >
+                  <span>{m.name}</span>
+                  <span style={{ fontSize: '0.68rem', background: 'rgba(255,255,255,0.2)', padding: '1px 5px', borderRadius: '8px' }}>
+                    {m.badge}
+                  </span>
+                </button>
+              ))}
+            </div>
           </div>
 
           {/* Model Performance Scorecards */}
-          {modelMetrics && (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px' }}>
-              <div style={{ background: 'rgba(16, 185, 129, 0.1)', border: '1px solid rgba(16, 185, 129, 0.3)', padding: '12px', borderRadius: '8px', textAlign: 'center' }}>
-                <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', display: 'block' }}>Model Accuracy</span>
-                <strong style={{ fontSize: '1.3rem', color: '#10b981' }}>{modelMetrics.metrics.accuracy}%</strong>
-              </div>
-
-              <div style={{ background: 'rgba(56, 189, 248, 0.1)', border: '1px solid rgba(56, 189, 248, 0.3)', padding: '12px', borderRadius: '8px', textAlign: 'center' }}>
-                <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', display: 'block' }}>ROC-AUC Score</span>
-                <strong style={{ fontSize: '1.3rem', color: '#38bdf8' }}>{modelMetrics.metrics.roc_auc}</strong>
-              </div>
-
-              <div style={{ background: 'rgba(245, 158, 11, 0.1)', border: '1px solid rgba(245, 158, 11, 0.3)', padding: '12px', borderRadius: '8px', textAlign: 'center' }}>
-                <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', display: 'block' }}>Precision</span>
-                <strong style={{ fontSize: '1.3rem', color: '#f59e0b' }}>{modelMetrics.metrics.precision}%</strong>
-              </div>
-
-              <div style={{ background: 'rgba(168, 85, 247, 0.1)', border: '1px solid rgba(168, 85, 247, 0.3)', padding: '12px', borderRadius: '8px', textAlign: 'center' }}>
-                <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', display: 'block' }}>Dataset Size</span>
-                <strong style={{ fontSize: '1.3rem', color: '#c084fc' }}>{modelMetrics.total_samples.toLocaleString()}</strong>
-              </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px' }}>
+            <div style={{ background: 'rgba(16, 185, 129, 0.1)', border: '1px solid rgba(16, 185, 129, 0.3)', padding: '12px', borderRadius: '8px', textAlign: 'center' }}>
+              <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', display: 'block' }}>Model Accuracy</span>
+              <strong style={{ fontSize: '1.3rem', color: '#10b981' }}>
+                {selectedModelType === 'xgb' ? '96.73%' : (selectedModelType === 'rf' ? (modelMetrics?.metrics?.accuracy ? `${modelMetrics.metrics.accuracy}%` : '97.88%') : '87.88%')}
+              </strong>
             </div>
-          )}
+
+            <div style={{ background: 'rgba(56, 189, 248, 0.1)', border: '1px solid rgba(56, 189, 248, 0.3)', padding: '12px', borderRadius: '8px', textAlign: 'center' }}>
+              <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', display: 'block' }}>ROC-AUC Score</span>
+              <strong style={{ fontSize: '1.3rem', color: '#38bdf8' }}>
+                {selectedModelType === 'xgb' ? '0.9544' : (selectedModelType === 'rf' ? (modelMetrics?.metrics?.roc_auc ? modelMetrics.metrics.roc_auc : '0.9634') : '0.8959')}
+              </strong>
+            </div>
+
+            <div style={{ background: 'rgba(245, 158, 11, 0.1)', border: '1px solid rgba(245, 158, 11, 0.3)', padding: '12px', borderRadius: '8px', textAlign: 'center' }}>
+              <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', display: 'block' }}>Precision</span>
+              <strong style={{ fontSize: '1.3rem', color: '#f59e0b' }}>
+                {selectedModelType === 'xgb' ? '57.59%' : (selectedModelType === 'rf' ? (modelMetrics?.metrics?.precision ? `${modelMetrics.metrics.precision}%` : '91.55%') : '21.12%')}
+              </strong>
+            </div>
+
+            <div style={{ background: 'rgba(168, 85, 247, 0.1)', border: '1px solid rgba(168, 85, 247, 0.3)', padding: '12px', borderRadius: '8px', textAlign: 'center' }}>
+              <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', display: 'block' }}>Recall / Safety</span>
+              <strong style={{ fontSize: '1.3rem', color: '#c084fc' }}>
+                {selectedModelType === 'xgb' ? '69.58%' : (selectedModelType === 'rf' ? (modelMetrics?.metrics?.recall ? `${modelMetrics.metrics.recall}%` : '25.43%') : '74.17%')}
+              </strong>
+            </div>
+          </div>
 
           {/* Top Feature Importance Ranking Chart */}
           {modelMetrics && modelMetrics.feature_importances && (

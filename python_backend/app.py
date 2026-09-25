@@ -1,5 +1,16 @@
 import os
+import sys
 import json
+
+# Ensure python_backend directory and workspace root are in sys.path
+BACKEND_DIR = os.path.dirname(os.path.abspath(__file__))
+if BACKEND_DIR not in sys.path:
+    sys.path.insert(0, BACKEND_DIR)
+
+PROJECT_ROOT = os.path.abspath(os.path.join(BACKEND_DIR, "../.."))
+if PROJECT_ROOT not in sys.path:
+    sys.path.insert(0, PROJECT_ROOT)
+
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 
