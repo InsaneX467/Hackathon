@@ -280,7 +280,7 @@ export default function Header({
               <div style={{ padding: '12px', textAlign: 'center', fontSize: '0.78rem', color: 'var(--text-muted)' }}>
                 No wards or locations match "{searchQuery}"
               </div>
-            ) : null}
+            )}
           </div>
         )}
       </div>
