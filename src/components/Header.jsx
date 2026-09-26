@@ -1,6 +1,8 @@
 import { useState, useRef, useEffect } from 'react';
 import { Search, Bell, User, MapPin, X, Clock, RefreshCw, Sun, Moon } from 'lucide-react';
 import { getSystemHealthSummary, formatDataAgeSeconds } from '../services/dataStatusService';
+import { searchLocationsWithGeocoding } from '../services/geocodingService';
+import { MONITORED_LOCATIONS } from '../data/locations';
 import ModelSwitcher from './ModelSwitcher';
 
 export default function Header({ 
@@ -25,6 +27,8 @@ export default function Header({
   const [isOpen, setIsOpen] = useState(false);
   const [showTimePopover, setShowTimePopover] = useState(false);
   const [liveTime, setLiveTime] = useState(new Date());
+  const [searchResults, setSearchResults] = useState([]);
+  const [isSearching, setIsSearching] = useState(false);
 
   // Live IST Clock effect
   useEffect(() => {
@@ -34,10 +38,35 @@ export default function Header({
     return () => clearInterval(timer);
   }, []);
 
-  const query = searchQuery.trim().toLowerCase();
-  const matchingVillages = query
-    ? villages.filter(v => v.name.toLowerCase().includes(query))
-    : [];
+  // Debounced search with Open-Meteo Geocoding + Local Locations
+  useEffect(() => {
+    let active = true;
+    const query = searchQuery.trim();
+
+    if (!query) {
+      setSearchResults([]);
+      setIsSearching(false);
+      return;
+    }
+
+    setIsSearching(true);
+    const timeout = setTimeout(async () => {
+      try {
+        const results = await searchLocationsWithGeocoding(query);
+        if (active) {
+          setSearchResults(results);
+          setIsSearching(false);
+        }
+      } catch (err) {
+        if (active) setIsSearching(false);
+      }
+    }, 250);
+
+    return () => {
+      active = false;
+      clearTimeout(timeout);
+    };
+  }, [searchQuery]);
 
   useEffect(() => {
     function handleClickOutside(e) {
@@ -52,9 +81,10 @@ export default function Header({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const handleSelect = (villageId) => {
+  const handleSelect = (item) => {
     if (onSelectVillage) {
-      onSelectVillage(villageId);
+      // Pass the item id
+      onSelectVillage(item.id || item.locationData?.id);
     }
     if (onSearchChange) {
       onSearchChange('');
@@ -63,8 +93,8 @@ export default function Header({
   };
 
   const handleSearchButtonClick = () => {
-    if (matchingVillages.length > 0) {
-      handleSelect(matchingVillages[0].id);
+    if (searchResults.length > 0) {
+      handleSelect(searchResults[0]);
     } else {
       setIsOpen(true);
       searchInputRef.current?.focus();
@@ -73,8 +103,8 @@ export default function Header({
 
   const handleKeyDown = (e) => {
     if (e.key === 'Enter') {
-      if (matchingVillages.length > 0) {
-        handleSelect(matchingVillages[0].id);
+      if (searchResults.length > 0) {
+        handleSelect(searchResults[0]);
       }
     } else if (e.key === 'Escape') {
       setIsOpen(false);
@@ -137,7 +167,7 @@ export default function Header({
           <input
             ref={searchInputRef}
             type="text"
-            placeholder="Search ward, village or location..."
+            placeholder="Search ward, village, district or location..."
             value={searchQuery}
             onFocus={() => setIsOpen(true)}
             onChange={(e) => {
@@ -180,7 +210,7 @@ export default function Header({
         </div>
 
         {/* Live Search Results Dropdown List */}
-        {isOpen && query.length > 0 && (
+        {isOpen && searchQuery.trim().length > 0 && (
           <div style={{
             position: 'absolute',
             top: 'calc(100% + 6px)',
@@ -250,7 +280,7 @@ export default function Header({
               <div style={{ padding: '12px', textAlign: 'center', fontSize: '0.78rem', color: 'var(--text-muted)' }}>
                 No wards or locations match "{searchQuery}"
               </div>
-            )}
+            ) : null}
           </div>
         )}
       </div>
@@ -330,6 +360,7 @@ export default function Header({
                   <Clock size={15} color="var(--accent-blue)" /> System Time & Sync
                 </div>
                 <button
+                  type="button"
                   onClick={() => setShowTimePopover(false)}
                   style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: 0 }}
                 >

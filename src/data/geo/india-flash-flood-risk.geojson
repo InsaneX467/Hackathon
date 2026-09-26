@@ -1,0 +1,529 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "id": "ff-hp-beas-valley",
+      "properties": {
+        "id": "ff-hp-beas-valley",
+        "name": "Beas River Gorge & Kullu Flood Corridor",
+        "region": "Himachal Pradesh",
+        "district": "Kullu / Mandi",
+        "hazardType": "flash_flood",
+        "riskLevel": "CRITICAL",
+        "baseScore": 88,
+        "description": "Steep glaciated catchment with rapid concentration time; vulnerable to cloudburst surges."
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              76.85,
+              31.6
+            ],
+            [
+              77.05,
+              31.85
+            ],
+            [
+              77.2,
+              32.25
+            ],
+            [
+              77.25,
+              32.2
+            ],
+            [
+              77.1,
+              31.8
+            ],
+            [
+              76.9,
+              31.55
+            ],
+            [
+              76.85,
+              31.6
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "ff-uk-alaknanda-gorge",
+      "properties": {
+        "id": "ff-uk-alaknanda-gorge",
+        "name": "Alaknanda - Mandakini Confluence Valley",
+        "region": "Uttarakhand",
+        "district": "Rudraprayag / Chamoli",
+        "hazardType": "flash_flood",
+        "riskLevel": "CRITICAL",
+        "baseScore": 92,
+        "description": "Extremely steep river gradient; risk of lake outbursts (GLOF/LDOF) and catastrophic surges."
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              78.95,
+              30.25
+            ],
+            [
+              79.15,
+              30.55
+            ],
+            [
+              79.45,
+              30.55
+            ],
+            [
+              79.4,
+              30.35
+            ],
+            [
+              79.1,
+              30.2
+            ],
+            [
+              78.95,
+              30.25
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "ff-sk-teesta-basin",
+      "properties": {
+        "id": "ff-sk-teesta-basin",
+        "name": "Teesta River GLOF & Flash Flood Corridor",
+        "region": "Sikkim / West Bengal",
+        "district": "Mangan / Pakyong / Jalpaiguri",
+        "hazardType": "flash_flood",
+        "riskLevel": "CRITICAL",
+        "baseScore": 94,
+        "description": "South Lhonak glacial lake breach path; torrential gorge funneling down to Siliguri plains."
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              88.35,
+              26.8
+            ],
+            [
+              88.45,
+              27.25
+            ],
+            [
+              88.6,
+              27.7
+            ],
+            [
+              88.75,
+              27.65
+            ],
+            [
+              88.55,
+              27.15
+            ],
+            [
+              88.5,
+              26.75
+            ],
+            [
+              88.35,
+              26.8
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "ff-as-dhemaji-jiadhal",
+      "properties": {
+        "id": "ff-as-dhemaji-jiadhal",
+        "name": "Dhemaji - Jiadhal River Flood Basin",
+        "region": "Assam",
+        "district": "Dhemaji / Lakhimpur",
+        "hazardType": "flash_flood",
+        "riskLevel": "CRITICAL",
+        "baseScore": 90,
+        "description": "Flash flood funnel from Arunachal foothills with massive siltation and embankment breaches."
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              94.35,
+              27.35
+            ],
+            [
+              94.5,
+              27.65
+            ],
+            [
+              94.85,
+              27.6
+            ],
+            [
+              94.95,
+              27.4
+            ],
+            [
+              94.65,
+              27.3
+            ],
+            [
+              94.35,
+              27.35
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "ff-as-barak-basin",
+      "properties": {
+        "id": "ff-as-barak-basin",
+        "name": "Barak River Lowland & Silchar Inundation",
+        "region": "Assam",
+        "district": "Cachar / Karimganj",
+        "hazardType": "flash_flood",
+        "riskLevel": "WARNING",
+        "baseScore": 82,
+        "description": "Bowl-shaped topography subject to severe backwater logging during torrential monsoon downpours."
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              92.6,
+              24.7
+            ],
+            [
+              92.75,
+              24.95
+            ],
+            [
+              93,
+              24.9
+            ],
+            [
+              92.9,
+              24.65
+            ],
+            [
+              92.6,
+              24.7
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "ff-bih-kosi-basin",
+      "properties": {
+        "id": "ff-bih-kosi-basin",
+        "name": "North Bihar Kosi River Flood Fan",
+        "region": "Bihar",
+        "district": "Supaul / Saharsa / Madhepura",
+        "hazardType": "flash_flood",
+        "riskLevel": "CRITICAL",
+        "baseScore": 89,
+        "description": "Sorrow of Bihar; avulsion-prone braided channel network carrying gigantic upstream Himalayan discharge."
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              86.5,
+              25.8
+            ],
+            [
+              86.7,
+              26.5
+            ],
+            [
+              87.1,
+              26.5
+            ],
+            [
+              87,
+              25.75
+            ],
+            [
+              86.5,
+              25.8
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "ff-up-rapti-gorakhpur",
+      "properties": {
+        "id": "ff-up-rapti-gorakhpur",
+        "name": "Gorakhpur - Rapti River Lowland Corridor",
+        "region": "Uttar Pradesh",
+        "district": "Gorakhpur / Deoria / Siddharthnagar",
+        "hazardType": "flash_flood",
+        "riskLevel": "WARNING",
+        "baseScore": 76,
+        "description": "Slow draining alluvial flat with rapid flash influxes from Nepal Mahabharat range."
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              82.8,
+              26.85
+            ],
+            [
+              83.1,
+              27.25
+            ],
+            [
+              83.6,
+              27.2
+            ],
+            [
+              83.5,
+              26.7
+            ],
+            [
+              82.8,
+              26.85
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "ff-od-mahanadi-delta",
+      "properties": {
+        "id": "ff-od-mahanadi-delta",
+        "name": "Mahanadi - Baitarani Coastal Delta Basin",
+        "region": "Odisha",
+        "district": "Cuttack / Kendrapara / Jagatsinghpur",
+        "hazardType": "flash_flood",
+        "riskLevel": "CRITICAL",
+        "baseScore": 86,
+        "description": "High-volume monsoon flood discharge combined with Bay of Bengal cyclonic storm surges."
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              85.6,
+              20.3
+            ],
+            [
+              85.8,
+              20.65
+            ],
+            [
+              86.4,
+              20.7
+            ],
+            [
+              86.5,
+              20.2
+            ],
+            [
+              85.85,
+              20.1
+            ],
+            [
+              85.6,
+              20.3
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "ff-mah-vashishti-chiplun",
+      "properties": {
+        "id": "ff-mah-vashishti-chiplun",
+        "name": "Vashishti River Basin & Chiplun Flash Flood Zone",
+        "region": "Maharashtra",
+        "district": "Ratnagiri",
+        "hazardType": "flash_flood",
+        "riskLevel": "CRITICAL",
+        "baseScore": 88,
+        "description": "Steep Western Ghats runoff funneling into tidal estuary; catastrophic urban flash inundations."
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              73.3,
+              17.4
+            ],
+            [
+              73.45,
+              17.65
+            ],
+            [
+              73.65,
+              17.6
+            ],
+            [
+              73.55,
+              17.35
+            ],
+            [
+              73.3,
+              17.4
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "ff-kar-netravati-basin",
+      "properties": {
+        "id": "ff-kar-netravati-basin",
+        "name": "Netravati River Coastal Catchment",
+        "region": "Karnataka",
+        "district": "Dakshina Kannada / Udupi",
+        "hazardType": "flash_flood",
+        "riskLevel": "WARNING",
+        "baseScore": 78,
+        "description": "High discharge torrents descending from Charmadi Ghat into coastal floodplains."
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              74.8,
+              12.75
+            ],
+            [
+              75.1,
+              13.05
+            ],
+            [
+              75.4,
+              12.95
+            ],
+            [
+              75.15,
+              12.65
+            ],
+            [
+              74.8,
+              12.75
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "ff-ker-periyar-basin",
+      "properties": {
+        "id": "ff-ker-periyar-basin",
+        "name": "Periyar River Catchment & Ernakulam Lowlands",
+        "region": "Kerala",
+        "district": "Idukki / Ernakulam",
+        "hazardType": "flash_flood",
+        "riskLevel": "CRITICAL",
+        "baseScore": 92,
+        "description": "Steep Western Ghat reservoir spillways discharging into densely populated coastal lowlands."
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              76.25,
+              9.95
+            ],
+            [
+              76.45,
+              10.25
+            ],
+            [
+              76.9,
+              10.15
+            ],
+            [
+              76.85,
+              9.85
+            ],
+            [
+              76.4,
+              9.8
+            ],
+            [
+              76.25,
+              9.95
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "ff-ker-wayanad-chaliyar",
+      "properties": {
+        "id": "ff-ker-wayanad-chaliyar",
+        "name": "Chaliyar River Nilambur Flash Flood Plain",
+        "region": "Kerala",
+        "district": "Malappuram / Wayanad",
+        "hazardType": "flash_flood",
+        "riskLevel": "CRITICAL",
+        "baseScore": 90,
+        "description": "Debris torrent and flash flood basin receiving torrential runoff from Wayanad peaks."
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              76.1,
+              11.2
+            ],
+            [
+              76.25,
+              11.45
+            ],
+            [
+              76.5,
+              11.4
+            ],
+            [
+              76.4,
+              11.15
+            ],
+            [
+              76.1,
+              11.2
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}

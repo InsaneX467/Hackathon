@@ -70,6 +70,42 @@ export const INITIAL_REALTIME_ALERTS = [
     timestamp: new Date(Date.now() - 2 * 60 * 1000).toISOString(),
     triggerData: 'Extreme precip rate 145 mm/hr + 92% Soil Saturation + 46° steep incline',
     actionText: 'Trigger High-Altitude Plateau Flash Evacuation Protocol. Mobilize District Emergency Response.'
+  },
+  {
+    id: 'ALT-1005',
+    villageId: 'loc_wayanad',
+    villageName: 'Wayanad (Meppadi - Chooralmala)',
+    hazard: 'High Debris Flow & Heavy Runoff Advisory',
+    severity: 'CRITICAL',
+    status: 'ACTIVE',
+    riskScore: 92,
+    timestamp: new Date(Date.now() - 5 * 60 * 1000).toISOString(),
+    triggerData: 'Sustained monsoon influx (168 mm) + 42° Ghat slope saturation',
+    actionText: 'Execute Western Ghats Valley Evacuation Order. Alert NDRF 4th Battalion.'
+  },
+  {
+    id: 'ALT-1006',
+    villageId: 'loc_manali',
+    villageName: 'Manali (Beas Upper Catchment)',
+    hazard: 'Cloudburst & River Surge Warning',
+    severity: 'HIGH',
+    status: 'ACTIVE',
+    riskScore: 81,
+    timestamp: new Date(Date.now() - 15 * 60 * 1000).toISOString(),
+    triggerData: 'Beas discharge rising 2.4 m/hr. High tributary sediment load.',
+    actionText: 'Issue Flash Flood Red Notice for Aut-Kullu Highway Sector.'
+  },
+  {
+    id: 'ALT-1007',
+    villageId: 'loc_chiplun',
+    villageName: 'Chiplun (Vashishti River Basin)',
+    hazard: 'Flash Flood Tidal Backwater Risk',
+    severity: 'CRITICAL',
+    status: 'ACTIVE',
+    riskScore: 86,
+    timestamp: new Date(Date.now() - 8 * 60 * 1000).toISOString(),
+    triggerData: 'Ghat runoff crest aligning with high tide in Vashishti estuary',
+    actionText: 'Deploy Konkan Flood Rescue Boats. Open Municipal Relief Shelters.'
   }
 ];
 
