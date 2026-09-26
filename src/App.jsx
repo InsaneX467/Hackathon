@@ -16,9 +16,40 @@ import Toast from './components/Toast';
 import AlertBanner from './components/AlertBanner';
 import ErrorBoundary from './components/ErrorBoundary';
 import { INITIAL_REALTIME_ALERTS, fetchLocationsWithRisk, fetchActiveAlerts } from './services/telemetryService';
+import { MONITORED_LOCATIONS, findLocationById } from './data/locations';
+import AnalyticsSection from './components/analytics/AnalyticsSection';
 import { Info } from 'lucide-react';
 
 const INITIAL_VILLAGES = [
+  // Primary Assam & Northeast Focus Sector (Dhemaji, Lakhimpur, Dibrugarh, Tinsukia)
+  { 
+    id: 'loc_dhemaji', name: 'Dhemaji', lat: 27.4816, lng: 94.5828, 
+    rain: 124, moisture: 89, slope: 41,
+    riverLevel: 87.4, warningMark: 86.8, dangerMark: 87.5, riverRiseRate: 1.8, discharge: 4600,
+    shelter: { name: 'Dhemaji Higher Secondary Relief Center', dist: '0.8 km', elevation: '+25m', capacity: 1200, occupancy: '340 Beds Occupied', route: 'Take Northern High Embankment Bypass' },
+    historicalData: { flood10yr: 87.2, flood50yr: 88.0, flood100yr: 88.8, maxHistorical2013: 87.9, maxHistorical2022: 88.2 }
+  },
+  { 
+    id: 'loc_lakhimpur', name: 'North Lakhimpur', lat: 27.2368, lng: 94.1037, 
+    rain: 88, moisture: 81, slope: 28,
+    riverLevel: 3.4, warningMark: 3.2, dangerMark: 4.1, riverRiseRate: 1.2, discharge: 2400,
+    shelter: { name: 'Lakhimpur Town Emergency Shelter', dist: '1.2 km', elevation: '+18m', capacity: 900, occupancy: '210 Beds Occupied', route: 'Subansiri Trunk Road Bypass' },
+    historicalData: { flood10yr: 3.8, flood50yr: 4.5, flood100yr: 5.2, maxHistorical2013: 4.2, maxHistorical2020: 4.7 }
+  },
+  { 
+    id: 'loc_dibrugarh', name: 'Dibrugarh', lat: 27.4728, lng: 94.9120, 
+    rain: 115, moisture: 87, slope: 38,
+    riverLevel: 105.8, warningMark: 105.2, dangerMark: 105.7, riverRiseRate: 2.1, discharge: 5800,
+    shelter: { name: 'Dibrugarh University Relief Hall', dist: '1.5 km', elevation: '+32m', capacity: 1500, occupancy: '480 Beds Occupied', route: 'National Highway 37 High Corridor' },
+    historicalData: { flood10yr: 105.9, flood50yr: 106.8, flood100yr: 107.5, maxHistorical2013: 106.2, maxHistorical2024: 106.5 }
+  },
+  { 
+    id: 'loc_tinsukia', name: 'Tinsukia', lat: 27.5000, lng: 95.3667, 
+    rain: 102, moisture: 84, slope: 34,
+    riverLevel: 4.1, warningMark: 3.8, dangerMark: 4.8, riverRiseRate: 1.4, discharge: 3100,
+    shelter: { name: 'Tinsukia Stadium Relief Camp', dist: '0.9 km', elevation: '+22m', capacity: 1100, occupancy: '190 Beds Occupied', route: 'Makum Bypass Trail' },
+    historicalData: { flood10yr: 4.4, flood50yr: 5.1, flood100yr: 5.9, maxHistorical2013: 4.7, maxHistorical2021: 5.2 }
+  },
   // Uttarakhand & Himalayan Wards (v1 - v8)
   { 
     id: 'v1', name: 'Joshimath Ward 1', lat: 30.5506, lng: 79.5660, 
@@ -193,10 +224,48 @@ function getRiskCategory(score) {
   return { label: 'CRITICAL', color: '#ef4444', hex: '#ef4444' };
 }
 
+const NATIONWIDE_INITIAL_VILLAGES = MONITORED_LOCATIONS.map(loc => {
+  const existing = INITIAL_VILLAGES.find(iv => iv.id === loc.id || iv.name.toLowerCase() === loc.name.toLowerCase());
+  if (existing) {
+    return { ...loc, ...existing };
+  }
+  return {
+    id: loc.id,
+    name: loc.name,
+    district: loc.district,
+    state: loc.state,
+    lat: loc.lat,
+    lng: loc.lng,
+    rain: loc.rain || Math.floor((loc.historicalLandslideRisk || 0.6) * 85) + 12,
+    moisture: loc.soilRisk ? Math.floor(loc.soilRisk * 100) : 74,
+    slope: loc.slope || 32,
+    riverLevel: loc.riverLevel || 2.2,
+    warningMark: loc.warningMark || 3.0,
+    dangerMark: loc.dangerMark || 4.0,
+    riverRiseRate: 1.1,
+    discharge: 180,
+    shelter: {
+      name: `${loc.name} Disaster Relief & Evacuation Center`,
+      dist: '1.2 km',
+      elevation: '+35m',
+      capacity: 800,
+      occupancy: '120 Beds Occupied',
+      route: 'Designated High Ground Escarpment Route'
+    },
+    historicalData: {
+      flood10yr: 3.5,
+      flood50yr: 4.8,
+      flood100yr: 6.0,
+      maxHistorical2013: 5.4,
+      maxHistorical2021: 4.9
+    }
+  };
+});
+
 export default function App() {
   const [activePage, setActivePage] = useState('dashboard');
   const [activeMode, setActiveMode] = useState('landslide');
-  const [selectedVillageId, setSelectedVillageId] = useState('v1');
+  const [selectedVillageId, setSelectedVillageId] = useState('loc_shimla');
   const [searchQuery, setSearchQuery] = useState('');
   const [lastUpdatedTime, setLastUpdatedTime] = useState(new Date());
 
@@ -205,7 +274,7 @@ export default function App() {
   const [refreshInterval, setRefreshInterval] = useState(15);
 
   const [villages, setVillages] = useState(() => 
-    INITIAL_VILLAGES.map(v => {
+    NATIONWIDE_INITIAL_VILLAGES.map(v => {
       const score = calculateRisk(v, 'landslide');
       return { ...v, score, cat: getRiskCategory(score) };
     })
@@ -276,7 +345,7 @@ export default function App() {
     fetchLiveData();
   };
 
-  const selectedVillage = villages.find(v => v.id === selectedVillageId) || villages[0];
+  const selectedVillage = villages.find(v => v.id === selectedVillageId) || findLocationById(selectedVillageId) || villages[0];
   const activeAlertsCount = alerts.filter(a => a.severity === 'CRITICAL' || a.severity === 'HIGH' || a.critical).length;
 
   return (
@@ -420,6 +489,19 @@ export default function App() {
                     />
                   </div>
                 </div>
+
+                {/* 4. NEW ANALYTICS & MONITORING SECTION (BELOW LIVE HAZARD MAP) */}
+                <AnalyticsSection
+                  selectedLocation={selectedVillage}
+                  mode={activeMode}
+                  onNavigateToMap={() => setActivePage('map')}
+                  onTriggerToast={(msg) => {
+                    setToasts(prev => [
+                      ...prev,
+                      { id: `toast-${Date.now()}`, message: msg, type: 'info', timestamp: new Date() }
+                    ]);
+                  }}
+                />
               </div>
             )}
           </ErrorBoundary>

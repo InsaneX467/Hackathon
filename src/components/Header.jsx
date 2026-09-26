@@ -1,6 +1,8 @@
 import { useState, useRef, useEffect } from 'react';
-import { Search, Bell, User, MapPin, X, Clock, RefreshCw, CheckCircle2, Sun, Moon } from 'lucide-react';
+import { Search, Bell, User, MapPin, X, Clock, RefreshCw, Sun, Moon, Globe } from 'lucide-react';
 import { getSystemHealthSummary, formatDataAgeSeconds } from '../services/dataStatusService';
+import { searchLocationsWithGeocoding } from '../services/geocodingService';
+import { MONITORED_LOCATIONS } from '../data/locations';
 import ModelSwitcher from './ModelSwitcher';
 
 export default function Header({ 
@@ -25,6 +27,8 @@ export default function Header({
   const [isOpen, setIsOpen] = useState(false);
   const [showTimePopover, setShowTimePopover] = useState(false);
   const [liveTime, setLiveTime] = useState(new Date());
+  const [searchResults, setSearchResults] = useState([]);
+  const [isSearching, setIsSearching] = useState(false);
 
   // Live IST Clock effect
   useEffect(() => {
@@ -34,10 +38,35 @@ export default function Header({
     return () => clearInterval(timer);
   }, []);
 
-  const query = searchQuery.trim().toLowerCase();
-  const matchingVillages = query
-    ? villages.filter(v => v.name.toLowerCase().includes(query))
-    : [];
+  // Debounced search with Open-Meteo Geocoding + Local Locations
+  useEffect(() => {
+    let active = true;
+    const query = searchQuery.trim();
+
+    if (!query) {
+      setSearchResults([]);
+      setIsSearching(false);
+      return;
+    }
+
+    setIsSearching(true);
+    const timeout = setTimeout(async () => {
+      try {
+        const results = await searchLocationsWithGeocoding(query);
+        if (active) {
+          setSearchResults(results);
+          setIsSearching(false);
+        }
+      } catch (err) {
+        if (active) setIsSearching(false);
+      }
+    }, 250);
+
+    return () => {
+      active = false;
+      clearTimeout(timeout);
+    };
+  }, [searchQuery]);
 
   useEffect(() => {
     function handleClickOutside(e) {
@@ -52,9 +81,10 @@ export default function Header({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const handleSelect = (villageId) => {
+  const handleSelect = (item) => {
     if (onSelectVillage) {
-      onSelectVillage(villageId);
+      // Pass the item id
+      onSelectVillage(item.id || item.locationData?.id);
     }
     if (onSearchChange) {
       onSearchChange('');
@@ -63,8 +93,8 @@ export default function Header({
   };
 
   const handleSearchButtonClick = () => {
-    if (matchingVillages.length > 0) {
-      handleSelect(matchingVillages[0].id);
+    if (searchResults.length > 0) {
+      handleSelect(searchResults[0]);
     } else {
       setIsOpen(true);
       searchInputRef.current?.focus();
@@ -73,8 +103,8 @@ export default function Header({
 
   const handleKeyDown = (e) => {
     if (e.key === 'Enter') {
-      if (matchingVillages.length > 0) {
-        handleSelect(matchingVillages[0].id);
+      if (searchResults.length > 0) {
+        handleSelect(searchResults[0]);
       }
     } else if (e.key === 'Escape') {
       setIsOpen(false);
@@ -99,8 +129,8 @@ export default function Header({
       position: 'relative',
       zIndex: 100
     }}>
-      {/* Search Input Bar with Live Dropdown & Search Button */}
-      <div ref={searchContainerRef} style={{ position: 'relative', width: '360px' }}>
+      {/* Search Input Bar with Live Open-Meteo Geocoding Dropdown */}
+      <div ref={searchContainerRef} style={{ position: 'relative', width: '380px' }}>
         <div style={{
           display: 'flex',
           alignItems: 'center',
@@ -131,8 +161,8 @@ export default function Header({
               flexShrink: 0,
               transition: 'transform 0.15s ease, background 0.15s ease'
             }}
-            onMouseEnter={(e) => e.currentTarget.style.background = '#bae6fd'}
-            onMouseLeave={(e) => e.currentTarget.style.background = '#e0f2fe'}
+            onMouseEnter={(e) => (e.currentTarget.style.background = '#bae6fd')}
+            onMouseLeave={(e) => (e.currentTarget.style.background = '#e0f2fe')}
           >
             <Search size={14} color="#0284c7" />
           </button>
@@ -140,7 +170,7 @@ export default function Header({
           <input
             ref={searchInputRef}
             type="text"
-            placeholder="Search ward, village or location..."
+            placeholder="Search ward, village, district or location..."
             value={searchQuery}
             onFocus={() => setIsOpen(true)}
             onChange={(e) => {
@@ -183,7 +213,7 @@ export default function Header({
         </div>
 
         {/* Live Search Results Dropdown List */}
-        {isOpen && query.length > 0 && (
+        {isOpen && searchQuery.trim().length > 0 && (
           <div style={{
             position: 'absolute',
             top: 'calc(100% + 6px)',
@@ -193,67 +223,68 @@ export default function Header({
             border: '1px solid #e2e8f0',
             borderRadius: '12px',
             boxShadow: '0 10px 25px rgba(0, 0, 0, 0.12)',
-            maxHeight: '280px',
+            maxHeight: '300px',
             overflowY: 'auto',
             zIndex: 99999,
             padding: '6px'
           }}>
-            {matchingVillages.length > 0 ? (
-              matchingVillages.map((v) => {
-                const badgeColor = v.score >= 80 ? '#dc2626' : v.score >= 60 ? '#ea580c' : v.score >= 40 ? '#d97706' : '#16a34a';
-                const badgeBg = v.score >= 80 ? '#fef2f2' : v.score >= 60 ? '#fff7ed' : v.score >= 40 ? '#fffbeb' : '#f0fdf4';
-                const label = v.cat?.label || (v.score >= 80 ? 'CRITICAL' : v.score >= 60 ? 'WARNING' : v.score >= 40 ? 'WATCH' : 'LOW');
+            <div style={{ padding: '4px 8px', fontSize: '0.68rem', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', borderBottom: '1px solid #f1f5f9' }}>
+              {isSearching ? 'Querying GIS & Open-Meteo Geocoder...' : `Results for "${searchQuery}"`}
+            </div>
 
-                return (
-                  <div
-                    key={v.id}
-                    onClick={() => handleSelect(v.id)}
-                    style={{
-                      padding: '8px 12px',
-                      borderRadius: '8px',
-                      cursor: 'pointer',
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'center',
-                      transition: 'background 0.15s ease',
-                      borderBottom: '1px solid #f8fafc'
-                    }}
-                    onMouseEnter={(e) => e.currentTarget.style.background = '#f1f5f9'}
-                    onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
-                  >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            {searchResults.length > 0 ? (
+              searchResults.map((item) => (
+                <div
+                  key={item.id}
+                  onClick={() => handleSelect(item)}
+                  style={{
+                    padding: '8px 12px',
+                    borderRadius: '8px',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    transition: 'background 0.15s ease',
+                    borderBottom: '1px solid #f8fafc'
+                  }}
+                  onMouseEnter={(e) => (e.currentTarget.style.background = '#f1f5f9')}
+                  onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    {item.isMonitored ? (
                       <MapPin size={15} color="#0284c7" />
-                      <div>
-                        <div style={{ fontSize: '0.84rem', fontWeight: 700, color: '#0f172a' }}>
-                          {v.name}
-                        </div>
-                        <div style={{ fontSize: '0.72rem', color: '#64748b' }}>
-                          Lat {v.lat.toFixed(2)}°, Lng {v.lng.toFixed(2)}° • Chamoli
-                        </div>
+                    ) : (
+                      <Globe size={15} color="#64748b" />
+                    )}
+                    <div>
+                      <div style={{ fontSize: '0.84rem', fontWeight: 700, color: '#0f172a' }}>
+                        {item.name}
+                      </div>
+                      <div style={{ fontSize: '0.72rem', color: '#64748b' }}>
+                        {item.admin1 ? `${item.admin1}, ` : ''}{item.country || 'India'} • Lat {item.lat.toFixed(2)}°, Lng {item.lng.toFixed(2)}°
                       </div>
                     </div>
-
-                    <div style={{ textAlign: 'right' }}>
-                      <span style={{
-                        fontSize: '0.68rem',
-                        fontWeight: 800,
-                        padding: '2px 7px',
-                        borderRadius: '10px',
-                        background: badgeBg,
-                        color: badgeColor,
-                        border: `1px solid ${badgeColor}30`
-                      }}>
-                        {v.score} {label}
-                      </span>
-                    </div>
                   </div>
-                );
-              })
-            ) : (
+
+                  <div style={{ textAlign: 'right' }}>
+                    <span style={{
+                      fontSize: '0.66rem',
+                      fontWeight: 700,
+                      padding: '2px 6px',
+                      borderRadius: '8px',
+                      background: item.isMonitored ? '#e0f2fe' : '#f1f5f9',
+                      color: item.isMonitored ? '#0369a1' : '#64748b'
+                    }}>
+                      {item.isMonitored ? 'MONITORED' : 'GEOCODED'}
+                    </span>
+                  </div>
+                </div>
+              ))
+            ) : !isSearching ? (
               <div style={{ padding: '12px', textAlign: 'center', fontSize: '0.78rem', color: '#94a3b8' }}>
-                No wards or locations match "{searchQuery}"
+                No matching locations found.
               </div>
-            )}
+            ) : null}
           </div>
         )}
       </div>
@@ -267,7 +298,7 @@ export default function Header({
 
       {/* Right Controls: Operational Status, Live IST Time Button, Notifications, User */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-        {/* System Health Status */}
+        {/* Dynamic Status Indicator */}
         <div style={{
           display: 'flex',
           alignItems: 'center',
@@ -283,7 +314,7 @@ export default function Header({
           <span style={{
             width: '6px', height: '6px', borderRadius: '50%',
             background: health.overallStatus === 'CRITICAL' ? '#ef4444' : '#10b981'
-          }}></span>
+          }} />
           <span>STATUS: {health.overallStatus}</span>
         </div>
 
@@ -306,8 +337,8 @@ export default function Header({
               color: '#0f172a',
               boxShadow: showTimePopover ? '0 0 0 2px rgba(2, 132, 199, 0.2)' : 'none'
             }}
-            onMouseEnter={(e) => e.currentTarget.style.background = '#f1f5f9'}
-            onMouseLeave={(e) => e.currentTarget.style.background = '#f8fafc'}
+            onMouseEnter={(e) => (e.currentTarget.style.background = '#f1f5f9')}
+            onMouseLeave={(e) => (e.currentTarget.style.background = '#f8fafc')}
           >
             <Clock size={15} color="#0284c7" />
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.78rem', fontWeight: 600 }}>
@@ -318,7 +349,7 @@ export default function Header({
                 borderRadius: '50%',
                 background: '#10b981',
                 boxShadow: '0 0 6px #10b981'
-              }} title="Live IST Clock Running"></span>
+              }} title="Live IST Clock Running" />
             </div>
           </button>
 
@@ -344,6 +375,7 @@ export default function Header({
                   <Clock size={15} color="#0284c7" /> System Time & Sync
                 </div>
                 <button
+                  type="button"
                   onClick={() => setShowTimePopover(false)}
                   style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: 0 }}
                 >
@@ -388,8 +420,8 @@ export default function Header({
                   marginTop: '4px',
                   transition: 'background 0.15s ease'
                 }}
-                onMouseEnter={(e) => e.currentTarget.style.background = '#0369a1'}
-                onMouseLeave={(e) => e.currentTarget.style.background = '#0284c7'}
+                onMouseEnter={(e) => (e.currentTarget.style.background = '#0369a1')}
+                onMouseLeave={(e) => (e.currentTarget.style.background = '#0284c7')}
               >
                 <RefreshCw size={13} /> Sync Telemetry Now
               </button>
@@ -444,4 +476,3 @@ export default function Header({
     </header>
   );
 }
-

@@ -7,35 +7,35 @@
   --panel-solid: #ffffff;
   --panel-border: #e2e8f0;
   --panel-border-hover: #cbd5e1;
-  
+
   --text-primary: #0f172a;
   --text-secondary: #475569;
   --text-muted: #64748b;
-  
+
   --accent-blue: #0284c7;
   --accent-blue-glow: rgba(2, 132, 199, 0.15);
   --accent-cyan: #0891b2;
-  
+
   --risk-low: #16a34a;
   --risk-low-bg: #f0fdf4;
   --risk-low-border: #bbf7d0;
-  
+
   --risk-medium: #d97706;
   --risk-medium-bg: #fffbeb;
   --risk-medium-border: #fef3c7;
-  
+
   --risk-high: #dc2626;
   --risk-high-bg: #fef2f2;
   --risk-high-border: #fecaca;
-  
+
   --font-brand: 'Outfit', -apple-system, sans-serif;
   --font-body: 'Inter', -apple-system, sans-serif;
-  
+
   --radius-sm: 6px;
   --radius-md: 10px;
   --radius-lg: 14px;
   --radius-pill: 9999px;
-  
+
   --glass-shadow: 0 4px 16px -2px rgba(15, 23, 42, 0.05), 0 2px 6px -1px rgba(15, 23, 42, 0.03);
 }
 
@@ -46,7 +46,7 @@
   --panel-solid: #0f172a;
   --panel-border: #1e293b;
   --panel-border-hover: #334155;
-  
+
   --text-primary: #f8fafc;
   --text-secondary: #cbd5e1;
   --text-muted: #94a3b8;
@@ -58,7 +58,9 @@
   padding: 0;
 }
 
-html, body, #root {
+html,
+body,
+#root {
   height: 100vh;
   max-height: 100vh;
   overflow: hidden;
@@ -68,7 +70,7 @@ html, body, #root {
 
 body {
   background-color: var(--bg-dark);
-  background-image: 
+  background-image:
     radial-gradient(at 0% 0%, rgba(2, 132, 199, 0.04) 0px, transparent 50%),
     radial-gradient(at 100% 100%, rgba(22, 163, 74, 0.03) 0px, transparent 50%),
     radial-gradient(at 50% 50%, rgba(220, 38, 38, 0.02) 0px, transparent 50%);
@@ -104,14 +106,17 @@ body {
   width: 5px;
   height: 5px;
 }
+
 ::-webkit-scrollbar-track {
   background: #f1f5f9;
   border-radius: 4px;
 }
+
 ::-webkit-scrollbar-thumb {
   background: #cbd5e1;
   border-radius: 4px;
 }
+
 ::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
 }
@@ -233,6 +238,7 @@ body {
   border-color: var(--risk-high-border);
   background: var(--risk-high-bg);
 }
+
 .stat-chip.critical .val {
   color: var(--risk-high);
 }
@@ -381,8 +387,15 @@ body {
 }
 
 @keyframes slideDown {
-  from { transform: translateY(-100%); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
+  from {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }
 
 .mode-btn {
@@ -440,9 +453,20 @@ body {
 }
 
 @keyframes radar-ping {
-  0% { transform: scale(0.9); opacity: 1; }
-  50% { transform: scale(1.3); opacity: 0.4; }
-  100% { transform: scale(0.9); opacity: 1; }
+  0% {
+    transform: scale(0.9);
+    opacity: 1;
+  }
+
+  50% {
+    transform: scale(1.3);
+    opacity: 0.4;
+  }
+
+  100% {
+    transform: scale(0.9);
+    opacity: 1;
+  }
 }
 
 /* Dashboard Layout */
@@ -561,9 +585,21 @@ body {
   height: 10px;
   border-radius: 50%;
 }
-.legend-dot.low { background: var(--risk-low); box-shadow: 0 0 6px var(--risk-low-border); }
-.legend-dot.medium { background: var(--risk-medium); box-shadow: 0 0 6px var(--risk-medium-border); }
-.legend-dot.high { background: var(--risk-high); box-shadow: 0 0 6px var(--risk-high-border); }
+
+.legend-dot.low {
+  background: var(--risk-low);
+  box-shadow: 0 0 6px var(--risk-low-border);
+}
+
+.legend-dot.medium {
+  background: var(--risk-medium);
+  box-shadow: 0 0 6px var(--risk-medium-border);
+}
+
+.legend-dot.high {
+  background: var(--risk-high);
+  box-shadow: 0 0 6px var(--risk-high-border);
+}
 
 .leaflet-container {
   width: 100%;
@@ -574,7 +610,8 @@ body {
 }
 
 /* Custom Leaflet Light Tooltip & Popup */
-.leaflet-popup-content-wrapper, .leaflet-popup-tip {
+.leaflet-popup-content-wrapper,
+.leaflet-popup-tip {
   background: #ffffff !important;
   color: var(--text-primary) !important;
   border: 1px solid var(--panel-border);
@@ -619,6 +656,7 @@ body {
   overflow: hidden;
   margin-bottom: 8px;
 }
+
 .popup-progress-fill {
   height: 100%;
   border-radius: 3px;
@@ -642,6 +680,7 @@ body {
   gap: 6px;
   transition: background 0.2s ease;
 }
+
 .popup-select-btn:hover {
   background: #0369a1;
 }
@@ -775,9 +814,17 @@ body {
   border-color: #38bdf8;
 }
 
-.village-item.low::before { background-color: var(--risk-low); }
-.village-item.medium::before { background-color: var(--risk-medium); }
-.village-item.high::before { background-color: var(--risk-high); }
+.village-item.low::before {
+  background-color: var(--risk-low);
+}
+
+.village-item.medium::before {
+  background-color: var(--risk-medium);
+}
+
+.village-item.high::before {
+  background-color: var(--risk-high);
+}
 
 .village-info-primary {
   display: flex;
@@ -827,11 +874,13 @@ body {
   border: 1px solid var(--risk-low-border);
   color: var(--risk-low);
 }
+
 .risk-badge.medium {
   background: var(--risk-medium-bg);
   border: 1px solid var(--risk-medium-border);
   color: var(--risk-medium);
 }
+
 .risk-badge.high {
   background: var(--risk-high-bg);
   border: 1px solid var(--risk-high-border);
@@ -856,6 +905,7 @@ body {
   align-items: center;
   transition: color 0.2s;
 }
+
 .clear-btn:hover {
   color: var(--risk-high);
 }
@@ -909,6 +959,7 @@ body {
   background: #fecaca;
   color: var(--risk-high);
 }
+
 .alert-tag.info {
   background: #e0f2fe;
   color: var(--accent-blue);
@@ -1113,9 +1164,17 @@ body {
 }
 
 @keyframes pulse-glow {
-  0% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.2); }
-  70% { box-shadow: 0 0 0 8px rgba(220, 38, 38, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0); }
+  0% {
+    box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.2);
+  }
+
+  70% {
+    box-shadow: 0 0 0 8px rgba(220, 38, 38, 0);
+  }
+
+  100% {
+    box-shadow: 0 0 0 0 rgba(220, 38, 38, 0);
+  }
 }
 
 .sliders-grid {
@@ -1225,13 +1284,21 @@ body {
   opacity: 0.8;
   transition: opacity 0.2s;
 }
+
 .toast-dismiss:hover {
   opacity: 1;
 }
 
 @keyframes toastSlideDown {
-  from { transform: translateY(-30px) scale(0.95); opacity: 0; }
-  to { transform: translateY(0) scale(1); opacity: 1; }
+  from {
+    transform: translateY(-30px) scale(0.95);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
 }
 
 /* Responsive adjustments */
@@ -1240,9 +1307,11 @@ body {
     flex-direction: column;
     overflow: auto;
   }
+
   .map-panel {
     min-height: 400px;
   }
+
   .controls-panel {
     grid-template-columns: 1fr;
   }
@@ -1374,8 +1443,15 @@ body {
 }
 
 @keyframes pulseWarning {
-  from { transform: scale(1); opacity: 0.8; }
-  to { transform: scale(1.25); opacity: 1; }
+  from {
+    transform: scale(1);
+    opacity: 0.8;
+  }
+
+  to {
+    transform: scale(1.25);
+    opacity: 1;
+  }
 }
 
 /* Lead Time Timer Card */
@@ -1567,9 +1643,20 @@ body {
 }
 
 @keyframes pulseGlow {
-  0% { transform: scale(0.9); opacity: 0.7; }
-  50% { transform: scale(1.3); opacity: 1; }
-  100% { transform: scale(0.9); opacity: 0.7; }
+  0% {
+    transform: scale(0.9);
+    opacity: 0.7;
+  }
+
+  50% {
+    transform: scale(1.3);
+    opacity: 1;
+  }
+
+  100% {
+    transform: scale(0.9);
+    opacity: 0.7;
+  }
 }
 
 .iot-sensors-grid {
@@ -1772,9 +1859,23 @@ body {
   border-radius: var(--radius-pill);
 }
 
-.hist-badge.yellow { background: #fffbeb; color: #d97706; border: 1px solid #fef3c7; }
-.hist-badge.orange { background: #fff7ed; color: #ea580c; border: 1px solid #ffedd5; }
-.hist-badge.red { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
+.hist-badge.yellow {
+  background: #fffbeb;
+  color: #d97706;
+  border: 1px solid #fef3c7;
+}
+
+.hist-badge.orange {
+  background: #fff7ed;
+  color: #ea580c;
+  border: 1px solid #ffedd5;
+}
+
+.hist-badge.red {
+  background: #fef2f2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+}
 
 /* Checklist */
 .checklist-card {
@@ -1848,8 +1949,15 @@ body {
 }
 
 @keyframes slideDownTicker {
-  from { transform: translateY(-100%); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
+  from {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }
 
 .ticker-badge {
@@ -2025,4 +2133,82 @@ body {
   color: var(--text-secondary);
 }
 
+/* --- Live Hazard Map & Pulse Animations --- */
+@keyframes pulseCriticalGlow {
+  0% { transform: scale(1); filter: drop-shadow(0 0 6px rgba(239, 68, 68, 0.7)); }
+  50% { transform: scale(1.08); filter: drop-shadow(0 0 14px rgba(239, 68, 68, 0.95)); }
+  100% { transform: scale(1); filter: drop-shadow(0 0 6px rgba(239, 68, 68, 0.7)); }
+}
 
+@keyframes pulseOrangeGlow {
+  0% { transform: scale(1); filter: drop-shadow(0 0 6px rgba(249, 115, 22, 0.7)); }
+  50% { transform: scale(1.08); filter: drop-shadow(0 0 14px rgba(249, 115, 22, 0.95)); }
+  100% { transform: scale(1); filter: drop-shadow(0 0 6px rgba(249, 115, 22, 0.7)); }
+}
+
+@keyframes pulseStationGlow {
+  0% { transform: scale(1); filter: drop-shadow(0 0 5px rgba(2, 132, 199, 0.7)); }
+  50% { transform: scale(1.06); filter: drop-shadow(0 0 12px rgba(56, 189, 248, 0.95)); }
+  100% { transform: scale(1); filter: drop-shadow(0 0 5px rgba(2, 132, 199, 0.7)); }
+}
+
+.pulse-critical {
+  animation: pulseCriticalGlow 2s infinite ease-in-out;
+}
+
+.pulse-critical-orange {
+  animation: pulseOrangeGlow 2.2s infinite ease-in-out;
+}
+
+.pulse-station {
+  animation: pulseStationGlow 2.6s infinite ease-in-out;
+}
+
+.hazard-custom-icon {
+  background: transparent !important;
+  border: none !important;
+}
+
+.city-text-label {
+  background: transparent !important;
+  border: none !important;
+  pointer-events: none !important;
+}
+
+.dark-hazard-popup .leaflet-popup-content-wrapper,
+.dark-hazard-popup .leaflet-popup-tip {
+  background: rgba(8, 16, 32, 0.95) !important;
+  color: #f1f5f9 !important;
+  border: 1px solid rgba(255, 255, 255, 0.18) !important;
+  backdrop-filter: blur(14px) !important;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.7) !important;
+  border-radius: 12px !important;
+}
+
+.dark-hazard-popup .leaflet-popup-close-button {
+  color: #94a3b8 !important;
+  padding: 6px !important;
+}
+
+.dark-hazard-popup .leaflet-popup-close-button:hover {
+  color: #ffffff !important;
+}
+
+/* BHOOMIRAKSHAK Hydro-Meteorological Analytics Grid */
+@media (min-width: 1024px) {
+  .analytics-charts-grid {
+    grid-template-columns: repeat(3, 1fr) !important;
+  }
+}
+
+@media (min-width: 640px) and (max-width: 1023px) {
+  .analytics-charts-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
+
+@media (max-width: 639px) {
+  .analytics-charts-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
