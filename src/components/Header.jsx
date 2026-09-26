@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Search, Bell, User, MapPin, X, Clock, RefreshCw, CheckCircle2, Sun, Moon } from 'lucide-react';
+import { Search, Bell, User, MapPin, X, Clock, RefreshCw, Sun, Moon } from 'lucide-react';
 import { getSystemHealthSummary, formatDataAgeSeconds } from '../services/dataStatusService';
 import ModelSwitcher from './ModelSwitcher';
 
@@ -13,7 +13,7 @@ export default function Header({
   onSearchChange,
   onSelectVillage,
   onRefreshData,
-  theme = 'light',
+  theme = 'dark',
   onToggleTheme
 }) {
   const health = getSystemHealthSummary();
@@ -88,29 +88,32 @@ export default function Header({
 
   return (
     <header className="dashboard-header" style={{
-      background: '#ffffff',
-      borderBottom: '1px solid #e2e8f0',
-      padding: '10px 24px',
+      background: 'var(--header-bg)',
+      backdropFilter: 'blur(8px)',
+      borderBottom: '1px solid var(--panel-border)',
+      padding: '0 20px',
       display: 'flex',
       alignItems: 'center',
-      justifyContent: 'space-between',
-      height: '56px',
-      minHeight: '56px',
+      justify: 'space-between',
+      height: '64px',
+      minHeight: '64px',
+      maxHeight: '64px',
       position: 'relative',
-      zIndex: 100
+      zIndex: 100,
+      flexShrink: 0,
+      color: 'var(--text-primary)'
     }}>
       {/* Search Input Bar with Live Dropdown & Search Button */}
-      <div ref={searchContainerRef} style={{ position: 'relative', width: '360px' }}>
+      <div ref={searchContainerRef} style={{ position: 'relative', width: '320px' }}>
         <div style={{
           display: 'flex',
           alignItems: 'center',
           gap: '8px',
-          background: '#f1f5f9',
-          border: '1px solid #cbd5e1',
-          borderRadius: '20px',
-          padding: '6px 14px',
+          background: 'var(--input-bg)',
+          border: '1px solid var(--input-border)',
+          borderRadius: '8px',
+          padding: '6px 12px',
           width: '100%',
-          boxShadow: isOpen ? '0 0 0 2px rgba(2, 132, 199, 0.2)' : 'none',
           transition: 'all 0.2s ease'
         }}>
           <button
@@ -118,23 +121,17 @@ export default function Header({
             onClick={handleSearchButtonClick}
             title="Click to search location"
             style={{
-              background: '#e0f2fe',
+              background: 'transparent',
               border: 'none',
-              borderRadius: '50%',
-              width: '26px',
-              height: '26px',
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
-              justifyContent: 'center',
+              justify: 'center',
               padding: 0,
-              flexShrink: 0,
-              transition: 'transform 0.15s ease, background 0.15s ease'
+              flexShrink: 0
             }}
-            onMouseEnter={(e) => e.currentTarget.style.background = '#bae6fd'}
-            onMouseLeave={(e) => e.currentTarget.style.background = '#e0f2fe'}
           >
-            <Search size={14} color="#0284c7" />
+            <Search size={15} color="#94a3b8" />
           </button>
           
           <input
@@ -153,7 +150,7 @@ export default function Header({
               background: 'transparent',
               outline: 'none',
               fontSize: '0.82rem',
-              color: '#0f172a',
+              color: 'var(--text-primary)',
               width: '100%'
             }}
           />
@@ -174,10 +171,10 @@ export default function Header({
                 padding: '2px', 
                 display: 'flex',
                 alignItems: 'center',
-                justifyContent: 'center' 
+                justify: 'center' 
               }}
             >
-              <X size={14} color="#64748b" />
+              <X size={14} color="var(--text-muted)" />
             </button>
           )}
         </div>
@@ -189,10 +186,10 @@ export default function Header({
             top: 'calc(100% + 6px)',
             left: 0,
             right: 0,
-            background: '#ffffff',
-            border: '1px solid #e2e8f0',
+            background: 'var(--card-bg)',
+            border: '1px solid var(--card-border)',
             borderRadius: '12px',
-            boxShadow: '0 10px 25px rgba(0, 0, 0, 0.12)',
+            boxShadow: 'var(--glass-shadow)',
             maxHeight: '280px',
             overflowY: 'auto',
             zIndex: 99999,
@@ -200,8 +197,8 @@ export default function Header({
           }}>
             {matchingVillages.length > 0 ? (
               matchingVillages.map((v) => {
-                const badgeColor = v.score >= 80 ? '#dc2626' : v.score >= 60 ? '#ea580c' : v.score >= 40 ? '#d97706' : '#16a34a';
-                const badgeBg = v.score >= 80 ? '#fef2f2' : v.score >= 60 ? '#fff7ed' : v.score >= 40 ? '#fffbeb' : '#f0fdf4';
+                const badgeColor = v.score >= 80 ? 'var(--risk-high)' : v.score >= 60 ? 'var(--risk-medium)' : v.score >= 40 ? 'var(--risk-medium)' : 'var(--risk-low)';
+                const badgeBg = v.score >= 80 ? 'var(--risk-high-bg)' : v.score >= 60 ? 'var(--risk-medium-bg)' : v.score >= 40 ? 'var(--risk-medium-bg)' : 'var(--risk-low-bg)';
                 const label = v.cat?.label || (v.score >= 80 ? 'CRITICAL' : v.score >= 60 ? 'WARNING' : v.score >= 40 ? 'WATCH' : 'LOW');
 
                 return (
@@ -213,21 +210,21 @@ export default function Header({
                       borderRadius: '8px',
                       cursor: 'pointer',
                       display: 'flex',
-                      justifyContent: 'space-between',
+                      justify: 'space-between',
                       alignItems: 'center',
                       transition: 'background 0.15s ease',
-                      borderBottom: '1px solid #f8fafc'
+                      borderBottom: '1px solid var(--card-border)'
                     }}
-                    onMouseEnter={(e) => e.currentTarget.style.background = '#f1f5f9'}
+                    onMouseEnter={(e) => e.currentTarget.style.background = 'var(--input-bg)'}
                     onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
                   >
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <MapPin size={15} color="#0284c7" />
+                      <MapPin size={15} color="var(--accent-blue)" />
                       <div>
-                        <div style={{ fontSize: '0.84rem', fontWeight: 700, color: '#0f172a' }}>
+                        <div style={{ fontSize: '0.84rem', fontWeight: 700, color: 'var(--text-primary)' }}>
                           {v.name}
                         </div>
-                        <div style={{ fontSize: '0.72rem', color: '#64748b' }}>
+                        <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>
                           Lat {v.lat.toFixed(2)}°, Lng {v.lng.toFixed(2)}° • Chamoli
                         </div>
                       </div>
@@ -241,7 +238,7 @@ export default function Header({
                         borderRadius: '10px',
                         background: badgeBg,
                         color: badgeColor,
-                        border: `1px solid ${badgeColor}30`
+                        border: `1px solid ${badgeColor}40`
                       }}>
                         {v.score} {label}
                       </span>
@@ -250,7 +247,7 @@ export default function Header({
                 );
               })
             ) : (
-              <div style={{ padding: '12px', textAlign: 'center', fontSize: '0.78rem', color: '#94a3b8' }}>
+              <div style={{ padding: '12px', textAlign: 'center', fontSize: '0.78rem', color: 'var(--text-muted)' }}>
                 No wards or locations match "{searchQuery}"
               </div>
             )}
@@ -262,32 +259,33 @@ export default function Header({
       <ModelSwitcher 
         selectedModel={mode}
         onModelChange={onModeChange}
-        theme={theme}
       />
 
-      {/* Right Controls: Operational Status, Live IST Time Button, Notifications, User */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-        {/* System Health Status */}
+      {/* Right Controls: Status Indicator, Live IST Time Button, Notifications, User */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+        {/* Status Critical Badge */}
         <div style={{
           display: 'flex',
           alignItems: 'center',
           gap: '6px',
           padding: '4px 12px',
-          borderRadius: '16px',
-          background: health.overallStatus === 'CRITICAL' ? '#fee2e2' : '#dcfce7',
-          color: health.overallStatus === 'CRITICAL' ? '#991b1b' : '#15803d',
-          fontSize: '0.75rem',
+          borderRadius: '9999px',
+          background: 'var(--risk-high-bg)',
+          border: '1px solid var(--risk-high-border)',
+          color: 'var(--risk-high)',
+          fontSize: '0.725rem',
           fontWeight: 700,
-          border: `1px solid ${health.overallStatus === 'CRITICAL' ? '#fca5a5' : '#86efac'}`
+          letterSpacing: '0.03em'
         }}>
           <span style={{
             width: '6px', height: '6px', borderRadius: '50%',
-            background: health.overallStatus === 'CRITICAL' ? '#ef4444' : '#10b981'
+            background: 'var(--risk-high)',
+            boxShadow: '0 0 6px var(--risk-high)'
           }}></span>
-          <span>STATUS: {health.overallStatus}</span>
+          <span>STATUS: CRITICAL</span>
         </div>
 
-        {/* Live IST Time Button with Popover */}
+        {/* Live IST Date & Time */}
         <div ref={timeContainerRef} style={{ position: 'relative' }}>
           <button
             type="button"
@@ -296,30 +294,18 @@ export default function Header({
             style={{
               display: 'flex',
               alignItems: 'center',
-              gap: '8px',
-              padding: '6px 12px',
+              gap: '6px',
+              padding: '5px 12px',
               borderRadius: '8px',
-              background: '#f8fafc',
-              border: '1px solid #e2e8f0',
+              background: 'var(--input-bg)',
+              border: '1px solid var(--card-border)',
               cursor: 'pointer',
               transition: 'all 0.15s ease',
-              color: '#0f172a',
-              boxShadow: showTimePopover ? '0 0 0 2px rgba(2, 132, 199, 0.2)' : 'none'
+              color: 'var(--text-primary)'
             }}
-            onMouseEnter={(e) => e.currentTarget.style.background = '#f1f5f9'}
-            onMouseLeave={(e) => e.currentTarget.style.background = '#f8fafc'}
           >
-            <Clock size={15} color="#0284c7" />
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.78rem', fontWeight: 600 }}>
-              <span>{formattedDate}, {formattedTime} IST</span>
-              <span style={{
-                width: '6px',
-                height: '6px',
-                borderRadius: '50%',
-                background: '#10b981',
-                boxShadow: '0 0 6px #10b981'
-              }} title="Live IST Clock Running"></span>
-            </div>
+            <Clock size={14} color="var(--text-muted)" />
+            <span style={{ fontSize: '0.75rem', fontWeight: 600 }}>{formattedDate}, {formattedTime} IST</span>
           </button>
 
           {/* Time & Telemetry Status Popover */}
@@ -329,40 +315,40 @@ export default function Header({
               top: 'calc(100% + 8px)',
               right: 0,
               width: '280px',
-              background: '#ffffff',
-              border: '1px solid #e2e8f0',
+              background: 'var(--card-bg)',
+              border: '1px solid var(--card-border)',
               borderRadius: '12px',
-              boxShadow: '0 10px 25px rgba(0, 0, 0, 0.15)',
+              boxShadow: 'var(--glass-shadow)',
               padding: '14px',
               zIndex: 99999,
               display: 'flex',
               flexDirection: 'column',
               gap: '10px'
             }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #f1f5f9', paddingBottom: '8px' }}>
-                <div style={{ fontSize: '0.82rem', fontWeight: 700, color: '#0f172a', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <Clock size={15} color="#0284c7" /> System Time & Sync
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--card-border)', paddingBottom: '8px' }}>
+                <div style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <Clock size={15} color="var(--accent-blue)" /> System Time & Sync
                 </div>
                 <button
                   onClick={() => setShowTimePopover(false)}
                   style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: 0 }}
                 >
-                  <X size={14} color="#64748b" />
+                  <X size={14} color="var(--text-muted)" />
                 </button>
               </div>
 
-              <div style={{ fontSize: '0.78rem', color: '#475569', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+              <div style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', display: 'flex', flexDirection: 'column', gap: '6px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                   <span>Current IST Time:</span>
-                  <strong style={{ color: '#0f172a' }}>{formattedTime} IST</strong>
+                  <strong style={{ color: 'var(--text-primary)' }}>{formattedTime} IST</strong>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                   <span>Last Data Ingested:</span>
-                  <strong style={{ color: '#0284c7' }}>{formattedAge}</strong>
+                  <strong style={{ color: 'var(--accent-blue)' }}>{formattedAge}</strong>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                   <span>Auto-Refresh Cycle:</span>
-                  <strong style={{ color: '#16a34a' }}>Every 15s</strong>
+                  <strong style={{ color: 'var(--risk-low)' }}>Every 15s</strong>
                 </div>
               </div>
 
@@ -375,9 +361,9 @@ export default function Header({
                 style={{
                   display: 'flex',
                   alignItems: 'center',
-                  justifyContent: 'center',
+                  justify: 'center',
                   gap: '6px',
-                  background: '#0284c7',
+                  background: 'var(--accent-blue)',
                   color: '#ffffff',
                   border: 'none',
                   borderRadius: '8px',
@@ -388,8 +374,6 @@ export default function Header({
                   marginTop: '4px',
                   transition: 'background 0.15s ease'
                 }}
-                onMouseEnter={(e) => e.currentTarget.style.background = '#0369a1'}
-                onMouseLeave={(e) => e.currentTarget.style.background = '#0284c7'}
               >
                 <RefreshCw size={13} /> Sync Telemetry Now
               </button>
@@ -397,34 +381,35 @@ export default function Header({
           )}
         </div>
 
-        {/* Sun/Moon Quick Theme Switcher */}
+        {/* Theme Switcher Button */}
         <button
           type="button"
           onClick={() => onToggleTheme && onToggleTheme(theme === 'dark' ? 'light' : 'dark')}
-          title={`Switch to ${theme === 'dark' ? 'Light' : 'Dark'} Mode`}
+          title={`Switch Theme`}
           style={{
-            width: '32px', height: '32px', borderRadius: '50%',
-            background: theme === 'dark' ? '#1e293b' : '#f1f5f9',
-            border: theme === 'dark' ? '1px solid #334155' : '1px solid #e2e8f0',
+            width: '32px', height: '32px', borderRadius: '8px',
+            background: 'var(--input-bg)',
+            border: '1px solid var(--card-border)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            cursor: 'pointer', transition: 'all 0.2s ease'
+            cursor: 'pointer', color: 'var(--text-secondary)'
           }}
         >
-          {theme === 'dark' ? <Sun size={16} color="#f59e0b" /> : <Moon size={16} color="#0284c7" />}
+          {theme === 'dark' ? <Sun size={15} color="#f59e0b" /> : <Moon size={15} color="#0284c7" />}
         </button>
 
         {/* Notification Bell Badge */}
         <div style={{ position: 'relative', cursor: 'pointer' }}>
           <div style={{
-            width: '32px', height: '32px', borderRadius: '50%', background: theme === 'dark' ? '#1e293b' : '#f1f5f9',
+            width: '32px', height: '32px', borderRadius: '8px', background: 'var(--input-bg)',
+            border: '1px solid var(--card-border)',
             display: 'flex', alignItems: 'center', justifyContent: 'center'
           }}>
-            <Bell size={16} color={theme === 'dark' ? '#f8fafc' : '#0f172a'} />
+            <Bell size={15} color="var(--text-muted)" />
           </div>
           {activeAlertsCount > 0 && (
             <span style={{
               position: 'absolute', top: '-2px', right: '-2px',
-              background: '#ef4444', color: '#fff', fontSize: '0.65rem',
+              background: 'var(--risk-high)', color: '#fff', fontSize: '0.65rem',
               fontWeight: 800, width: '16px', height: '16px', borderRadius: '50%',
               display: 'flex', alignItems: 'center', justifyContent: 'center'
             }}>
@@ -433,15 +418,15 @@ export default function Header({
           )}
         </div>
 
-        {/* User Profile Icon */}
+        {/* User Profile Avatar Icon */}
         <div style={{
-          width: '32px', height: '32px', borderRadius: '50%', background: theme === 'dark' ? '#0369a1' : '#e0f2fe',
+          width: '32px', height: '32px', borderRadius: '50%', background: 'rgba(37, 99, 235, 0.2)',
+          border: '1px solid rgba(37, 99, 235, 0.4)',
           display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer'
         }}>
-          <User size={16} color={theme === 'dark' ? '#38bdf8' : '#0284c7'} />
+          <User size={15} color="#60a5fa" />
         </div>
       </div>
     </header>
   );
 }
-

@@ -266,10 +266,14 @@ export default function App() {
     return () => clearInterval(interval);
   }, [activeMode, refreshInterval]);
 
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+    document.body.setAttribute('data-theme', theme);
+  }, [theme]);
+
   const handleToggleTheme = (newTheme) => {
     setTheme(newTheme);
     localStorage.setItem('bhoomirakshak_theme', newTheme);
-    document.documentElement.setAttribute('data-theme', newTheme);
   };
 
   const handleRefreshTelemetry = () => {
@@ -282,9 +286,8 @@ export default function App() {
   return (
     <div className="app-viewport-container" data-theme={theme} style={{
       display: 'flex', flexDirection: 'row', width: '100vw', height: '100vh',
-      background: theme === 'dark' ? '#090d16' : '#f8fafc',
-      color: theme === 'dark' ? '#f8fafc' : '#0f172a',
-      overflow: 'hidden'
+      background: 'var(--bg-dark)',
+      color: 'var(--text-primary)',
     }}>
       <Toast toasts={toasts} onDismiss={(id) => setToasts(prev => prev.filter(t => t.id !== id))} />
 
@@ -296,7 +299,7 @@ export default function App() {
       />
 
       {/* MAIN VIEWPORT CONTAINER */}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', height: '100vh', width: 'calc(100vw - 240px)', overflow: 'hidden' }}>
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', height: '100vh', minWidth: 0, background: 'var(--bg-dark)', overflow: 'hidden' }}>
         
         {/* Top Operational Header */}
         <Header 
@@ -317,7 +320,15 @@ export default function App() {
         />
 
         {/* Content Body View Wrapped in ErrorBoundary */}
-        <div className="main-content-viewport" style={{ flex: 1, padding: '16px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+        <div className="main-content-viewport" style={{ 
+          flex: 1, 
+          padding: activePage === 'dashboard' ? '8px 12px' : '16px', 
+          overflowY: activePage === 'dashboard' ? 'hidden' : 'auto', 
+          display: 'flex', 
+          flexDirection: 'column', 
+          gap: activePage === 'dashboard' ? '8px' : '12px',
+          minHeight: 0
+        }}>
           <ErrorBoundary>
             {activePage === 'datasources' && <DataSourcesPage />}
 
@@ -351,7 +362,7 @@ export default function App() {
             )}
 
             {activePage === 'alerts' && (
-              <div style={{ flex: 1, background: '#ffffff', borderRadius: '12px', border: '1px solid #e2e8f0', padding: '16px' }}>
+              <div style={{ flex: 1, background: 'var(--card-bg)', borderRadius: '12px', border: '1px solid var(--card-border)', padding: '16px', color: 'var(--text-primary)' }}>
                 <AlertsLog alerts={alerts} onClearAlerts={() => setAlerts([])} />
               </div>
             )}
@@ -373,7 +384,7 @@ export default function App() {
             )}
 
             {activePage === 'dashboard' && (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', flex: 1 }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', flex: 1, minHeight: 0, overflow: 'hidden' }}>
                 
                 {/* 1. TOP SUMMARY CARDS (6 Cards) */}
                 <TopSummaryCards 
@@ -395,22 +406,26 @@ export default function App() {
                 <div style={{ 
                   display: 'grid', 
                   gridTemplateColumns: '65% 35%', 
-                  gap: '16px', 
+                  gap: '10px', 
                   flex: 1,
-                  minHeight: '480px' 
+                  minHeight: 0,
+                  height: '100%',
+                  overflow: 'hidden'
                 }}>
                   
                   {/* Central Map Panel (65% width) */}
-                  <MapPanel 
-                    villages={villages} 
-                    selectedId={selectedVillageId} 
-                    onSelect={setSelectedVillageId} 
-                    mode={activeMode}
-                    lastUpdatedTime={lastUpdatedTime}
-                  />
+                  <div style={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0, overflow: 'hidden' }}>
+                    <MapPanel 
+                      villages={villages} 
+                      selectedId={selectedVillageId} 
+                      onSelect={setSelectedVillageId} 
+                      mode={activeMode}
+                      lastUpdatedTime={lastUpdatedTime}
+                    />
+                  </div>
 
                   {/* Selected Location Panel & Nearby Areas (35% width) */}
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', overflowY: 'auto' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0, overflow: 'hidden' }}>
                     <SelectedLocationCard 
                       village={selectedVillage} 
                       villages={villages}
@@ -425,30 +440,7 @@ export default function App() {
           </ErrorBoundary>
         </div>
 
-        {/* Global Command Footer Bar */}
-        <footer style={{
-          background: '#0f172a',
-          borderTop: '1px solid rgba(255, 255, 255, 0.1)',
-          padding: '6px 16px',
-          display: 'flex',
-          justify: 'space-between',
-          alignItems: 'center',
-          fontSize: '0.725rem',
-          color: '#94a3b8'
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 600 }}>
-            <span style={{ color: '#38bdf8' }}>BHOOMIRAKSHAK</span>
-            <span>|</span>
-            <span>Protecting Communities, Saving Lives</span>
-          </div>
-
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <span>Data Sources: <strong>IoT Sensors</strong> | <strong>IMD</strong> | <strong>CWC</strong> | <strong>IndLands</strong> | <strong>SDMA</strong></span>
-            <Info size={13} color="#38bdf8" />
-          </div>
-        </footer>
-
-        {/* Telemetry Status Bar */}
+        {/* Telemetry Status Bar / Bottom Operational Status Bar */}
         <ControlsPanel 
           village={selectedVillage}
           onRefreshData={handleRefreshTelemetry}

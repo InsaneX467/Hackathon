@@ -12,6 +12,15 @@ export default function CurrentConditionsBar({ village, lastUpdatedTime, mode = 
 
   const hazardTitle = mode === 'flash_flood' ? 'Flash Flood' : 'Landslide';
 
+  const cardStyle = {
+    background: 'var(--card-bg)',
+    border: '1px solid var(--card-border)',
+    borderRadius: '12px',
+    padding: '14px 16px',
+    boxShadow: 'var(--glass-shadow)',
+    color: 'var(--text-primary)'
+  };
+
   return (
     <div className="current-conditions-bar" style={{
       display: 'grid',
@@ -20,102 +29,69 @@ export default function CurrentConditionsBar({ village, lastUpdatedTime, mode = 
       marginTop: '16px'
     }}>
       {/* Card 1: Rainfall */}
-      <div style={{
-        background: '#ffffff',
-        border: '1px solid #e2e8f0',
-        borderRadius: '12px',
-        padding: '14px 16px',
-        boxShadow: '0 2px 8px rgba(0,0,0,0.03)'
-      }}>
+      <div style={cardStyle}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
-          <span style={{ fontSize: '0.78rem', color: '#64748b', fontWeight: 600 }}>Rainfall</span>
-          <CloudRain size={16} color="#0284c7" />
+          <span style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', fontWeight: 600 }}>Rainfall</span>
+          <CloudRain size={16} color="var(--accent-blue)" />
         </div>
-        <div style={{ fontSize: '1.3rem', fontWeight: 800, color: '#0f172a' }}>{rainVal} mm/hr</div>
+        <div style={{ fontSize: '1.3rem', fontWeight: 800, color: 'var(--text-primary)' }}>{rainVal} mm/hr</div>
         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.72rem', marginTop: '4px' }}>
-          <span style={{ color: rainVal > 30 ? '#dc2626' : '#16a34a', fontWeight: 700 }}>
+          <span style={{ color: rainVal > 30 ? 'var(--risk-high)' : 'var(--risk-low)', fontWeight: 700 }}>
             {rainVal > 30 ? '↑ Increasing' : '→ Stable'}
           </span>
-          <span style={{ color: '#94a3b8' }}>Updated {ageText}</span>
+          <span style={{ color: 'var(--text-muted)' }}>Updated {ageText}</span>
         </div>
       </div>
 
       {/* Card 2: Soil Moisture */}
-      <div style={{
-        background: '#ffffff',
-        border: '1px solid #e2e8f0',
-        borderRadius: '12px',
-        padding: '14px 16px',
-        boxShadow: '0 2px 8px rgba(0,0,0,0.03)'
-      }}>
+      <div style={cardStyle}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
-          <span style={{ fontSize: '0.78rem', color: '#64748b', fontWeight: 600 }}>Soil Moisture</span>
-          <Droplets size={16} color="#10b981" />
+          <span style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', fontWeight: 600 }}>Soil Moisture</span>
+          <Droplets size={16} color="var(--risk-low)" />
         </div>
-        <div style={{ fontSize: '1.3rem', fontWeight: 800, color: '#0f172a' }}>{moistureVal}%</div>
+        <div style={{ fontSize: '1.3rem', fontWeight: 800, color: 'var(--text-primary)' }}>{moistureVal}%</div>
         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.72rem', marginTop: '4px' }}>
-          <span style={{ color: moistureVal > 70 ? '#dc2626' : '#16a34a', fontWeight: 700 }}>
+          <span style={{ color: moistureVal > 70 ? 'var(--risk-high)' : 'var(--risk-low)', fontWeight: 700 }}>
             {moistureVal > 70 ? '↑ High Saturation' : '→ Normal'}
           </span>
-          <span style={{ color: '#94a3b8' }}>Updated {ageText}</span>
+          <span style={{ color: 'var(--text-muted)' }}>Updated {ageText}</span>
         </div>
       </div>
 
       {/* Card 3: River Level */}
-      <div style={{
-        background: '#ffffff',
-        border: '1px solid #e2e8f0',
-        borderRadius: '12px',
-        padding: '14px 16px',
-        boxShadow: '0 2px 8px rgba(0,0,0,0.03)'
-      }}>
+      <div style={cardStyle}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
-          <span style={{ fontSize: '0.78rem', color: '#64748b', fontWeight: 600 }}>River Stage Height</span>
-          <Waves size={16} color="#38bdf8" />
+          <span style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', fontWeight: 600 }}>River Stage Height</span>
+          <Waves size={16} color="var(--accent-blue)" />
         </div>
-        <div style={{ fontSize: '1.3rem', fontWeight: 800, color: '#0f172a' }}>{riverVal} m</div>
+        <div style={{ fontSize: '1.3rem', fontWeight: 800, color: 'var(--text-primary)' }}>{riverVal} m</div>
         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.72rem', marginTop: '4px' }}>
-          <span style={{ color: '#16a34a', fontWeight: 700 }}>→ Normal</span>
-          <span style={{ color: '#94a3b8' }}>Updated {ageText}</span>
+          <span style={{ color: 'var(--risk-low)', fontWeight: 700 }}>→ Normal</span>
+          <span style={{ color: 'var(--text-muted)' }}>Updated {ageText}</span>
         </div>
       </div>
 
       {/* Card 4: Sensor Network */}
-      <div style={{
-        background: '#ffffff',
-        border: '1px solid #e2e8f0',
-        borderRadius: '12px',
-        padding: '14px 16px',
-        boxShadow: '0 2px 8px rgba(0,0,0,0.03)'
-      }}>
+      <div style={cardStyle}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
-          <span style={{ fontSize: '0.78rem', color: '#64748b', fontWeight: 600 }}>Sensor Network</span>
-          <Radio size={16} color="#10b981" />
+          <span style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', fontWeight: 600 }}>Sensor Network</span>
+          <Radio size={16} color="var(--risk-low)" />
         </div>
-        <div style={{ fontSize: '1.3rem', fontWeight: 800, color: '#10b981' }}>{SENSOR_NODES.length} / {SENSOR_NODES.length}</div>
+        <div style={{ fontSize: '1.3rem', fontWeight: 800, color: 'var(--risk-low)' }}>{SENSOR_NODES.length} / {SENSOR_NODES.length}</div>
         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.72rem', marginTop: '4px' }}>
-          <span style={{ color: '#15803d', fontWeight: 700 }}>● ALL LIVE</span>
-          <span style={{ color: '#94a3b8' }}>All sensors reporting</span>
+          <span style={{ color: 'var(--risk-low)', fontWeight: 700 }}>● ALL LIVE</span>
+          <span style={{ color: 'var(--text-muted)' }}>All sensors reporting</span>
         </div>
       </div>
 
       {/* Card 5: Hazard Probability Card */}
-      <div style={{
-        background: '#ffffff',
-        border: '1px solid #e2e8f0',
-        borderRadius: '12px',
-        padding: '14px 16px',
-        boxShadow: '0 2px 8px rgba(0,0,0,0.03)',
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'space-between'
-      }}>
+      <div style={{ ...cardStyle, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <span style={{ fontSize: '0.78rem', color: '#64748b', fontWeight: 600 }}>{hazardTitle} Risk</span>
+          <span style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', fontWeight: 600 }}>{hazardTitle} Risk</span>
           <span style={{
             fontSize: '0.7rem', padding: '2px 6px', borderRadius: '10px',
-            background: scoreVal >= 70 ? '#fee2e2' : '#dcfce7',
-            color: scoreVal >= 70 ? '#b91c1c' : '#15803d',
+            background: scoreVal >= 70 ? 'var(--risk-high-bg)' : 'var(--risk-low-bg)',
+            color: scoreVal >= 70 ? 'var(--risk-high)' : 'var(--risk-low)',
             fontWeight: 700
           }}>
             {scoreVal >= 70 ? 'HIGH PROBABILITY' : 'MODERATE'}
@@ -123,13 +99,13 @@ export default function CurrentConditionsBar({ village, lastUpdatedTime, mode = 
         </div>
 
         <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', margin: '4px 0' }}>
-          <span style={{ fontSize: '1.5rem', fontWeight: 900, color: scoreVal >= 70 ? '#dc2626' : '#0284c7' }}>
+          <span style={{ fontSize: '1.5rem', fontWeight: 900, color: scoreVal >= 70 ? 'var(--risk-high)' : 'var(--accent-blue)' }}>
             {scoreVal}%
           </span>
-          <span style={{ fontSize: '0.75rem', color: '#64748b' }}>Estimated Probability</span>
+          <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Estimated Probability</span>
         </div>
 
-        <div style={{ fontSize: '0.7rem', color: '#94a3b8' }}>
+        <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>
           Evaluated from current hydro-meteorological indicators
         </div>
       </div>

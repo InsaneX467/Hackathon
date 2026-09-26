@@ -37,3 +37,7 @@ public/data/*.csv
 *.njsproj
 *.sln
 *.sw?
+
+# Temporary scratch files
+scratch/
+

@@ -1,4 +1,4 @@
-import { ShieldAlert, Radio, MapPin, CloudRain, Waves, Clock } from 'lucide-react';
+import { ShieldAlert, Radio, MapPin, CloudRain, Waves, Clock, TrendingUp, Minus } from 'lucide-react';
 import { formatDataAgeSeconds } from '../services/dataStatusService';
 import { SENSOR_NODES } from '../services/telemetryService';
 
@@ -10,181 +10,99 @@ export default function TopSummaryCards({ villages = [], alerts = [], lastUpdate
   const maxRain = villages.length > 0 ? Math.max(...villages.map(v => v.rain || 0)) : 126;
   const maxRiver = villages.length > 0 ? Math.max(...villages.map(v => v.riverLevel || 0)) : 2.4;
 
+  const cardStyle = {
+    background: 'var(--card-bg)',
+    border: '1px solid var(--card-border)',
+    borderRadius: '12px',
+    padding: '12px 14px',
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'space-between',
+    boxShadow: 'var(--glass-shadow)'
+  };
+
+  const labelStyle = {
+    fontSize: '0.68rem',
+    fontWeight: 700,
+    color: 'var(--text-muted)',
+    textTransform: 'uppercase',
+    letterSpacing: '0.05em'
+  };
+
   return (
-    <div className="top-summary-cards" style={{
+    <section className="grid grid-cols-6 gap-3 shrink-0" style={{
       display: 'grid',
-      gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))',
-      gap: '12px',
-      marginBottom: '12px'
+      gridTemplateColumns: 'repeat(6, minmax(0, 1fr))',
+      gap: '12px'
     }}>
-      {/* CARD 1: Active Alerts */}
-      <div style={{
-        background: activeAlertsCount > 0 ? '#fef2f2' : '#ffffff',
-        border: `1px solid ${activeAlertsCount > 0 ? '#fca5a5' : '#e2e8f0'}`,
-        borderRadius: '10px',
-        padding: '12px 14px',
-        boxShadow: '0 2px 6px rgba(0,0,0,0.03)',
-        display: 'flex',
-        alignItems: 'center',
-        gap: '12px'
-      }}>
-        <div style={{
-          width: '36px', height: '36px', borderRadius: '8px',
-          background: activeAlertsCount > 0 ? '#fee2e2' : '#f0fdf4',
-          display: 'flex', alignItems: 'center', justifyContent: 'center'
-        }}>
-          <ShieldAlert size={20} color={activeAlertsCount > 0 ? '#dc2626' : '#16a34a'} />
+      {/* Metric 1: Active Alerts */}
+      <div style={cardStyle}>
+        <div style={labelStyle}>
+          Active Alerts
         </div>
-        <div>
-          <div style={{ fontSize: '1.25rem', fontWeight: 800, color: activeAlertsCount > 0 ? '#b91c1c' : '#0f172a' }}>
-            {activeAlertsCount}
-          </div>
-          <div style={{ fontSize: '0.75rem', color: activeAlertsCount > 0 ? '#991b1b' : '#64748b', fontWeight: 600 }}>
-            {activeAlertsCount > 0 ? 'Active Alerts' : 'Active Alerts'}
-          </div>
+        <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px', marginTop: '6px' }}>
+          <span style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--risk-high)', lineHeight: 1 }}>{activeAlertsCount}</span>
+          <span style={{ fontSize: '0.72rem', color: 'var(--risk-high)', fontWeight: 600 }}>Critical</span>
         </div>
       </div>
 
-      {/* CARD 2: Sensor Status */}
-      <div style={{
-        background: '#ffffff',
-        border: '1px solid #e2e8f0',
-        borderRadius: '10px',
-        padding: '12px 14px',
-        boxShadow: '0 2px 6px rgba(0,0,0,0.03)',
-        display: 'flex',
-        alignItems: 'center',
-        gap: '12px'
-      }}>
-        <div style={{
-          width: '36px', height: '36px', borderRadius: '8px',
-          background: '#dcfce7',
-          display: 'flex', alignItems: 'center', justifyContent: 'center'
-        }}>
-          <Radio size={20} color="#15803d" />
+      {/* Metric 2: Sensors Reporting */}
+      <div style={cardStyle}>
+        <div style={labelStyle}>
+          Sensors Reporting
         </div>
-        <div>
-          <div style={{ fontSize: '1.25rem', fontWeight: 800, color: '#0f172a' }}>
-            {SENSOR_NODES.length} / {SENSOR_NODES.length}
-          </div>
-          <div style={{ fontSize: '0.72rem', color: '#15803d', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '4px' }}>
-            <span>Sensors Reporting</span>
-            <span>● LIVE</span>
-          </div>
+        <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px', marginTop: '6px' }}>
+          <span style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--risk-low)', lineHeight: 1 }}>{SENSOR_NODES.length} / {SENSOR_NODES.length}</span>
+          <span style={{ fontSize: '0.62rem', background: 'var(--risk-low-bg)', color: 'var(--risk-low)', padding: '1px 5px', borderRadius: '4px', fontWeight: 700, textTransform: 'uppercase', border: '1px solid var(--risk-low-border)' }}>LIVE</span>
         </div>
       </div>
 
-      {/* CARD 3: Monitored Locations */}
-      <div style={{
-        background: '#ffffff',
-        border: '1px solid #e2e8f0',
-        borderRadius: '10px',
-        padding: '12px 14px',
-        boxShadow: '0 2px 6px rgba(0,0,0,0.03)',
-        display: 'flex',
-        alignItems: 'center',
-        gap: '12px'
-      }}>
-        <div style={{
-          width: '36px', height: '36px', borderRadius: '8px',
-          background: '#e0f2fe',
-          display: 'flex', alignItems: 'center', justifyContent: 'center'
-        }}>
-          <MapPin size={20} color="#0284c7" />
+      {/* Metric 3: Monitored Wards */}
+      <div style={cardStyle}>
+        <div style={labelStyle}>
+          Monitored Wards
         </div>
-        <div>
-          <div style={{ fontSize: '1.25rem', fontWeight: 800, color: '#0f172a' }}>
-            {villages.length}
-          </div>
-          <div style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: 600 }}>
-            Monitored Wards
-          </div>
+        <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px', marginTop: '6px' }}>
+          <span style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-primary)', lineHeight: 1 }}>{villages.length}</span>
+          <span style={{ fontSize: '0.72rem', color: 'var(--text-secondary)' }}>Active</span>
         </div>
       </div>
 
-      {/* CARD 4: Maximum Rainfall */}
-      <div style={{
-        background: '#ffffff',
-        border: '1px solid #e2e8f0',
-        borderRadius: '10px',
-        padding: '12px 14px',
-        boxShadow: '0 2px 6px rgba(0,0,0,0.03)',
-        display: 'flex',
-        alignItems: 'center',
-        gap: '12px'
-      }}>
-        <div style={{
-          width: '36px', height: '36px', borderRadius: '8px',
-          background: '#f0f9ff',
-          display: 'flex', alignItems: 'center', justifyContent: 'center'
-        }}>
-          <CloudRain size={20} color="#0284c7" />
+      {/* Metric 4: Max Rainfall */}
+      <div style={cardStyle}>
+        <div style={labelStyle}>
+          Max Rainfall
         </div>
-        <div>
-          <div style={{ fontSize: '1.15rem', fontWeight: 800, color: '#0f172a' }}>
-            {Math.round(maxRain)} mm/hr
-          </div>
-          <div style={{ fontSize: '0.72rem', color: maxRain > 30 ? '#dc2626' : '#64748b', fontWeight: 600 }}>
-            Max Rainfall {maxRain > 30 ? '↑ Increasing' : '→ Normal'}
-          </div>
+        <div style={{ display: 'flex', flexDirection: 'column', marginTop: '4px' }}>
+          <span style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--text-primary)', lineHeight: 1 }}>{Math.round(maxRain)} mm/h</span>
+          <span style={{ fontSize: '0.68rem', color: 'var(--risk-medium)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '3px', marginTop: '4px' }}>
+            <TrendingUp size={12} /> Increasing
+          </span>
         </div>
       </div>
 
-      {/* CARD 5: Maximum River Level */}
-      <div style={{
-        background: '#ffffff',
-        border: '1px solid #e2e8f0',
-        borderRadius: '10px',
-        padding: '12px 14px',
-        boxShadow: '0 2px 6px rgba(0,0,0,0.03)',
-        display: 'flex',
-        alignItems: 'center',
-        gap: '12px'
-      }}>
-        <div style={{
-          width: '36px', height: '36px', borderRadius: '8px',
-          background: '#f0f9ff',
-          display: 'flex', alignItems: 'center', justifyContent: 'center'
-        }}>
-          <Waves size={20} color="#38bdf8" />
+      {/* Metric 5: Max River Level */}
+      <div style={cardStyle}>
+        <div style={labelStyle}>
+          Max River Level
         </div>
-        <div>
-          <div style={{ fontSize: '1.15rem', fontWeight: 800, color: '#0f172a' }}>
-            {maxRiver.toFixed(1)} m
-          </div>
-          <div style={{ fontSize: '0.72rem', color: '#16a34a', fontWeight: 600 }}>
-            Max River Level → Stable
-          </div>
+        <div style={{ display: 'flex', flexDirection: 'column', marginTop: '4px' }}>
+          <span style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--text-primary)', lineHeight: 1 }}>{maxRiver.toFixed(1)} m</span>
+          <span style={{ fontSize: '0.68rem', color: 'var(--risk-low)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '3px', marginTop: '4px' }}>
+            <Minus size={12} /> Stable
+          </span>
         </div>
       </div>
 
-      {/* CARD 6: Data Freshness */}
-      <div style={{
-        background: '#ffffff',
-        border: '1px solid #e2e8f0',
-        borderRadius: '10px',
-        padding: '12px 14px',
-        boxShadow: '0 2px 6px rgba(0,0,0,0.03)',
-        display: 'flex',
-        alignItems: 'center',
-        gap: '12px'
-      }}>
-        <div style={{
-          width: '36px', height: '36px', borderRadius: '8px',
-          background: '#f1f5f9',
-          display: 'flex', alignItems: 'center', justifyContent: 'center'
-        }}>
-          <Clock size={20} color="#64748b" />
+      {/* Metric 6: Last Updated */}
+      <div style={cardStyle}>
+        <div style={labelStyle}>
+          Last Updated
         </div>
-        <div>
-          <div style={{ fontSize: '1.1rem', fontWeight: 800, color: '#0f172a' }}>
-            {ageText}
-          </div>
-          <div style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: 600 }}>
-            Last Updated
-          </div>
+        <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px', marginTop: '6px' }}>
+          <span style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--text-primary)', lineHeight: 1 }}>{ageText}</span>
         </div>
       </div>
-    </div>
+    </section>
   );
 }

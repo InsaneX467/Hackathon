@@ -3,13 +3,31 @@ import {
   CloudRain, 
   Droplets, 
   Mountain, 
-  Waves, 
-  ShieldAlert, 
-  MapPin, 
-  Radio, 
-  CheckCircle2 
+  Waves,
+  TrendingUp,
+  AlertTriangle,
+  Minus
 } from 'lucide-react';
 import { formatDataAgeSeconds } from '../services/dataStatusService';
+
+function getLocationSubtitle(village) {
+  if (!village) return 'Chamoli, Uttarakhand';
+  const name = village.name || '';
+  if (name.includes('Guwahati')) return 'Kamrup Metropolitan, Assam';
+  if (name.includes('Silchar')) return 'Cachar, Assam';
+  if (name.includes('Majuli')) return 'Majuli River Island, Assam';
+  if (name.includes('Haflong')) return 'Dima Hasao, Assam';
+  if (name.includes('Kaziranga')) return 'Golaghat, Assam';
+  if (name.includes('Cherrapunji')) return 'East Khasi Hills, Meghalaya';
+  if (name.includes('Gangtok')) return 'East Sikkim, Sikkim';
+  if (name.includes('Aizawl')) return 'Aizawl District, Mizoram';
+  if (name.includes('Itanagar')) return 'Papum Pare, Arunachal Pradesh';
+  if (name.includes('Kohima')) return 'Kohima District, Nagaland';
+  if (name.includes('Agartala')) return 'West Tripura, Tripura';
+  if (name.includes('Imphal')) return 'Imphal West, Manipur';
+  if (village.lng > 85) return 'North-East Monitored Zone';
+  return 'Chamoli, Uttarakhand';
+}
 
 export default function SelectedLocationCard({ 
   village, 
@@ -22,7 +40,7 @@ export default function SelectedLocationCard({
 
   if (!village) {
     return (
-      <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '20px', color: '#64748b' }}>
+      <div style={{ background: 'var(--card-bg)', border: '1px solid var(--card-border)', borderRadius: '12px', padding: '16px', color: 'var(--text-secondary)', height: '100%' }}>
         Select a location on the map to inspect live current conditions and risk indicators.
       </div>
     );
@@ -32,239 +50,250 @@ export default function SelectedLocationCard({
   const isWarning = village.score >= 60 && village.score < 80;
   const isWatch = village.score >= 40 && village.score < 60;
 
-  const riskLabel = isCritical ? 'CRITICAL LANDSLIDE RISK' : isWarning ? 'WARNING LANDSLIDE RISK' : isWatch ? 'WATCH' : 'LOW RISK';
-  const riskSymbol = isCritical ? '🔴' : isWarning ? '🟠' : isWatch ? '🟡' : '🟢';
+  const riskLabel = isCritical ? (mode === 'flash_flood' ? 'Critical Flood Risk' : 'Critical Landslide Risk') : isWarning ? 'Warning Risk' : isWatch ? 'Watch' : 'Low Risk';
   const riskColor = isCritical ? '#ef4444' : isWarning ? '#f97316' : isWatch ? '#f59e0b' : '#10b981';
-
-  const hazardName = mode === 'flash_flood' ? 'Flash Flood Risk' : 'Landslide Risk';
-
-  // Trends based on actual readings
-  const rainTrend = village.rain > 30 ? '↑ Increasing' : village.rain > 10 ? '→ Moderate' : '↓ Low';
-  const moistureTrend = village.moisture > 75 ? '↑ High' : '→ Stable';
-  const slopeStatus = village.slope > 35 ? '⚠ Steep / Unstable' : '✓ Normal Incline';
-  const riverTrend = (village.riverLevel || 1.4) > (village.warningMark || 3.0) ? '↑ Rising Surge' : '→ Normal';
+  const riskBg = isCritical ? 'rgba(239, 68, 68, 0.15)' : isWarning ? 'rgba(249, 115, 22, 0.15)' : isWatch ? 'rgba(245, 158, 11, 0.15)' : 'rgba(16, 185, 129, 0.15)';
+  const riskBorder = isCritical ? 'rgba(239, 68, 68, 0.35)' : isWarning ? 'rgba(249, 115, 22, 0.35)' : isWatch ? 'rgba(245, 158, 11, 0.35)' : 'rgba(16, 185, 129, 0.35)';
 
   const ageText = formatDataAgeSeconds(lastUpdatedTime || new Date());
 
-  // Filter nearby villages for ranking list (excluding selected)
-  const nearbyVillages = villages.filter(v => v.id !== village.id).slice(0, 3);
+  // Filter nearby villages for ranking list (excluding selected) - slice 2 to fit cleanly
+  const nearbyVillages = villages.filter(v => v.id !== village.id).slice(0, 2);
+
+  const subCardStyle = {
+    background: 'var(--input-bg)',
+    padding: '10px',
+    borderRadius: '8px',
+    border: '1px solid var(--card-border)'
+  };
 
   return (
-    <div className="selected-location-card" style={{
-      background: '#ffffff',
-      border: '1px solid #e2e8f0',
+    <section className="selected-location-card" style={{
+      background: 'var(--card-bg)',
+      border: '1px solid var(--card-border)',
       borderRadius: '12px',
-      padding: '20px',
-      boxShadow: '0 2px 10px rgba(0, 0, 0, 0.04)',
+      padding: '14px',
       display: 'flex',
       flexDirection: 'column',
-      gap: '16px'
+      justifyContent: 'space-between',
+      height: '100%',
+      overflow: 'hidden',
+      color: 'var(--text-primary)'
     }}>
-      {/* 1. LOCATION HEADER */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-        <div>
-          <h2 style={{ fontSize: '1.35rem', fontWeight: 800, margin: 0, color: '#0f172a' }}>{village.name}</h2>
-          <span style={{ fontSize: '0.82rem', color: '#64748b' }}>Chamoli, Uttarakhand</span>
+      {/* TOP CONTENT SECTION */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', minHeight: 0, overflow: 'hidden' }}>
+        
+        {/* 1. LOCATION HEADER */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+          <div>
+            <h2 style={{ fontSize: '1.15rem', fontWeight: 800, margin: 0, color: 'var(--text-primary)', letterSpacing: '-0.02em' }}>{village.name}</h2>
+            <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 500 }}>{getLocationSubtitle(village)}</span>
+          </div>
+
+          <div style={{ textAlign: 'right' }}>
+            <div style={{
+              padding: '3px 10px',
+              borderRadius: '9999px',
+              background: riskBg,
+              color: riskColor,
+              fontWeight: 800,
+              fontSize: '0.68rem',
+              border: `1px solid ${riskBorder}`,
+              textTransform: 'uppercase',
+              letterSpacing: '0.03em'
+            }}>
+              {riskLabel}
+            </div>
+            <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '4px' }}>
+              Risk Score: <strong style={{ fontSize: '1.05rem', color: isCritical ? '#ef4444' : 'var(--text-primary)' }}>{village.score}</strong> / 100
+            </div>
+          </div>
         </div>
 
-        <div style={{ textAlign: 'right' }}>
-          <div style={{
-            padding: '4px 10px',
-            borderRadius: '20px',
-            background: `${riskColor}15`,
-            color: riskColor,
-            fontWeight: 800,
-            fontSize: '0.78rem',
-            border: `1px solid ${riskColor}30`,
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '4px'
-          }}>
-            <span>{riskSymbol}</span>
-            <span>{riskLabel}</span>
-          </div>
-          <div style={{ fontSize: '0.8rem', color: '#64748b', marginTop: '4px' }}>
-            Risk Score: <strong style={{ fontSize: '1.2rem', color: '#0f172a' }}>{village.score}</strong> / 100
-          </div>
+        {/* 2. DATA FRESHNESS & PROVENANCE BAR */}
+        <div style={{
+          background: 'var(--input-bg)',
+          border: '1px solid var(--card-border)',
+          borderRadius: '8px',
+          padding: '6px 10px',
+          fontSize: '0.7rem',
+          color: 'var(--text-secondary)',
+          display: 'flex',
+          justify: 'space-between',
+          alignItems: 'center'
+        }}>
+          <span>Updated <strong style={{ color: 'var(--text-primary)' }}>{ageText}</strong></span>
+          <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+            Data Source: <strong style={{ color: 'var(--text-primary)' }}>IoT Sensors + Remote Sensing</strong>
+          </span>
+          <span style={{ color: 'var(--risk-low)', fontWeight: 700, flexShrink: 0, marginLeft: '4px' }}>● LIVE</span>
         </div>
+
+        {/* 3. SUB-TABS */}
+        <div style={{ display: 'flex', borderBottom: '1px solid var(--card-border)', background: 'var(--input-bg)', borderRadius: '6px' }}>
+          <button
+            type="button"
+            onClick={() => setActiveSubTab('conditions')}
+            style={{
+              flex: 1, padding: '7px 4px', border: 'none', background: activeSubTab === 'conditions' ? 'var(--accent-blue-glow)' : 'transparent',
+              fontWeight: 700, fontSize: '0.72rem', cursor: 'pointer',
+              color: activeSubTab === 'conditions' ? 'var(--accent-blue)' : 'var(--text-secondary)',
+              borderBottom: activeSubTab === 'conditions' ? '2px solid var(--accent-blue)' : 'none'
+            }}
+          >
+            Current Conditions
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveSubTab('factors')}
+            style={{
+              flex: 1, padding: '7px 4px', border: 'none', background: activeSubTab === 'factors' ? 'var(--accent-blue-glow)' : 'transparent',
+              fontWeight: 700, fontSize: '0.72rem', cursor: 'pointer',
+              color: activeSubTab === 'factors' ? 'var(--accent-blue)' : 'var(--text-secondary)',
+              borderBottom: activeSubTab === 'factors' ? '2px solid var(--accent-blue)' : 'none'
+            }}
+          >
+            Why at Risk?
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveSubTab('terrain')}
+            style={{
+              flex: 1, padding: '7px 4px', border: 'none', background: activeSubTab === 'terrain' ? 'var(--accent-blue-glow)' : 'transparent',
+              fontWeight: 700, fontSize: '0.72rem', cursor: 'pointer',
+              color: activeSubTab === 'terrain' ? 'var(--accent-blue)' : 'var(--text-secondary)',
+              borderBottom: activeSubTab === 'terrain' ? '2px solid var(--accent-blue)' : 'none'
+            }}
+          >
+            Terrain & Satellite
+          </button>
+        </div>
+
+        {/* 4. CURRENT CONDITIONS GRID */}
+        {activeSubTab === 'conditions' && (
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+            <div style={subCardStyle}>
+              <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '4px', fontWeight: 600 }}>
+                <CloudRain size={13} color="var(--accent-blue)" /> Rainfall
+              </div>
+              <div style={{ fontSize: '1.1rem', fontWeight: 800, color: 'var(--text-primary)', margin: '4px 0 2px 0' }}>{Math.round(village.rain)} mm/hr</div>
+              <div style={{ fontSize: '0.68rem', color: village.rain > 30 ? 'var(--risk-medium)' : 'var(--risk-low)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '3px' }}>
+                <TrendingUp size={11} /> Increasing • {ageText}
+              </div>
+            </div>
+
+            <div style={subCardStyle}>
+              <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '4px', fontWeight: 600 }}>
+                <Droplets size={13} color="var(--accent-blue)" /> Soil Moisture
+              </div>
+              <div style={{ fontSize: '1.1rem', fontWeight: 800, color: 'var(--text-primary)', margin: '4px 0 2px 0' }}>{Math.round(village.moisture)}%</div>
+              <div style={{ fontSize: '0.68rem', color: village.moisture > 70 ? 'var(--risk-high)' : 'var(--risk-low)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '3px' }}>
+                <AlertTriangle size={11} /> High • {ageText}
+              </div>
+            </div>
+
+            <div style={subCardStyle}>
+              <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '4px', fontWeight: 600 }}>
+                <Mountain size={13} color="var(--risk-medium)" /> Slope Angle
+              </div>
+              <div style={{ fontSize: '1.1rem', fontWeight: 800, color: 'var(--text-primary)', margin: '4px 0 2px 0' }}>{Math.round(village.slope)}°</div>
+              <div style={{ fontSize: '0.68rem', color: 'var(--risk-medium)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '3px' }}>
+                <AlertTriangle size={11} /> Steep / Unstable
+              </div>
+            </div>
+
+            <div style={subCardStyle}>
+              <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '4px', fontWeight: 600 }}>
+                <Waves size={13} color="var(--accent-blue)" /> River Level
+              </div>
+              <div style={{ fontSize: '1.1rem', fontWeight: 800, color: 'var(--text-primary)', margin: '4px 0 2px 0' }}>{(village.riverLevel || 1.4).toFixed(1)} m</div>
+              <div style={{ fontSize: '0.68rem', color: 'var(--risk-low)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '3px' }}>
+                <Minus size={11} /> Normal • {ageText}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* 5. WHY IS THIS AREA AT RISK? */}
+        {activeSubTab === 'factors' && (
+          <div style={{ background: 'var(--input-bg)', padding: '10px 12px', borderRadius: '8px', border: '1px solid var(--card-border)' }}>
+            <h4 style={{ fontSize: '0.72rem', fontWeight: 800, margin: '0 0 6px 0', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+              WHY IS THIS AREA AT RISK?
+            </h4>
+            <ul style={{ margin: 0, paddingLeft: '14px', fontSize: '0.78rem', color: 'var(--text-primary)', lineHeight: '1.5' }}>
+              {village.rain > 15 && <li>🌧 Heavy rainfall in catchment area ({Math.round(village.rain)} mm/h)</li>}
+              {village.moisture > 60 && <li>💧 High soil moisture saturation level ({Math.round(village.moisture)}%)</li>}
+              {village.slope > 35 && <li>⛰ Steep terrain slope inclination angle ({Math.round(village.slope)}°)</li>}
+              <li>📈 Continuous real-time risk assessment via telemetry mesh</li>
+            </ul>
+          </div>
+        )}
+
+        {/* 6. TERRAIN & SATELLITE STATUS */}
+        {activeSubTab === 'terrain' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '0.78rem', color: 'var(--text-primary)', background: 'var(--input-bg)', padding: '10px 12px', borderRadius: '8px', border: '1px solid var(--card-border)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--card-border)', paddingBottom: '4px' }}>
+              <span style={{ color: 'var(--text-secondary)' }}>Elevation:</span>
+              <strong style={{ color: 'var(--text-primary)' }}>{village.lng > 85 ? '120 m' : '2,890 m'}</strong>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--card-border)', paddingBottom: '4px' }}>
+              <span style={{ color: 'var(--text-secondary)' }}>Slope:</span>
+              <strong style={{ color: 'var(--text-primary)' }}>{Math.round(village.slope)}°</strong>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--card-border)', paddingBottom: '4px' }}>
+              <span style={{ color: 'var(--text-secondary)' }}>Terrain Saturation:</span>
+              <strong style={{ color: village.moisture > 70 ? 'var(--risk-high)' : 'var(--risk-low)' }}>
+                {village.moisture > 70 ? 'High Saturation' : 'Normal Baseline'}
+              </strong>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+              <span style={{ color: 'var(--text-secondary)' }}>Satellite Provider:</span>
+              <strong style={{ color: 'var(--text-primary)' }}>Sentinel-2 / Esri HighRes</strong>
+            </div>
+          </div>
+        )}
       </div>
 
-      {/* 2. DATA FRESHNESS & PROVENANCE BAR */}
-      <div style={{
-        background: '#f8fafc',
-        border: '1px solid #e2e8f0',
-        borderRadius: '8px',
-        padding: '8px 12px',
-        fontSize: '0.78rem',
-        color: '#64748b',
-        display: 'flex',
-        justify: 'space-between',
-        alignItems: 'center'
-      }}>
-        <span>Updated <strong>{ageText}</strong></span>
-        <span>Data Source: <strong>IoT Sensors + Remote Sensing</strong></span>
-        <span style={{ color: '#15803d', fontWeight: 700 }}>● LIVE</span>
-      </div>
-
-      {/* 3. SUB-TABS */}
-      <div style={{ display: 'flex', gap: '6px', borderBottom: '1px solid #e2e8f0', paddingBottom: '6px' }}>
-        <button
-          onClick={() => setActiveSubTab('conditions')}
-          style={{
-            padding: '6px 12px', border: 'none', background: 'transparent',
-            fontWeight: 600, fontSize: '0.8rem', cursor: 'pointer',
-            color: activeSubTab === 'conditions' ? '#0284c7' : '#64748b',
-            borderBottom: activeSubTab === 'conditions' ? '2px solid #0284c7' : 'none'
-          }}
-        >
-          Current Conditions
-        </button>
-        <button
-          onClick={() => setActiveSubTab('factors')}
-          style={{
-            padding: '6px 12px', border: 'none', background: 'transparent',
-            fontWeight: 600, fontSize: '0.8rem', cursor: 'pointer',
-            color: activeSubTab === 'factors' ? '#0284c7' : '#64748b',
-            borderBottom: activeSubTab === 'factors' ? '2px solid #0284c7' : 'none'
-          }}
-        >
-          Why at Risk?
-        </button>
-        <button
-          onClick={() => setActiveSubTab('terrain')}
-          style={{
-            padding: '6px 12px', border: 'none', background: 'transparent',
-            fontWeight: 600, fontSize: '0.8rem', cursor: 'pointer',
-            color: activeSubTab === 'terrain' ? '#0284c7' : '#64748b',
-            borderBottom: activeSubTab === 'terrain' ? '2px solid #0284c7' : 'none'
-          }}
-        >
-          Terrain & Satellite
-        </button>
-      </div>
-
-      {/* 4. CURRENT CONDITIONS GRID */}
-      {activeSubTab === 'conditions' && (
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-          <div style={{ background: '#f8fafc', padding: '10px 12px', borderRadius: '8px', border: '1px solid #f1f5f9' }}>
-            <div style={{ fontSize: '0.75rem', color: '#64748b', display: 'flex', alignItems: 'center', gap: '4px' }}>
-              <CloudRain size={14} color="#0284c7" /> Rainfall
-            </div>
-            <div style={{ fontSize: '1.15rem', fontWeight: 800, color: '#0f172a', margin: '2px 0' }}>{Math.round(village.rain)} mm/hr</div>
-            <div style={{ fontSize: '0.72rem', color: village.rain > 30 ? '#dc2626' : '#16a34a', fontWeight: 600 }}>
-              {rainTrend} • Updated {ageText}
-            </div>
-          </div>
-
-          <div style={{ background: '#f8fafc', padding: '10px 12px', borderRadius: '8px', border: '1px solid #f1f5f9' }}>
-            <div style={{ fontSize: '0.75rem', color: '#64748b', display: 'flex', alignItems: 'center', gap: '4px' }}>
-              <Droplets size={14} color="#10b981" /> Soil Moisture
-            </div>
-            <div style={{ fontSize: '1.15rem', fontWeight: 800, color: '#0f172a', margin: '2px 0' }}>{Math.round(village.moisture)}%</div>
-            <div style={{ fontSize: '0.72rem', color: village.moisture > 70 ? '#dc2626' : '#16a34a', fontWeight: 600 }}>
-              {moistureTrend} • Updated {ageText}
-            </div>
-          </div>
-
-          <div style={{ background: '#f8fafc', padding: '10px 12px', borderRadius: '8px', border: '1px solid #f1f5f9' }}>
-            <div style={{ fontSize: '0.75rem', color: '#64748b', display: 'flex', alignItems: 'center', gap: '4px' }}>
-              <Mountain size={14} color="#f59e0b" /> Slope Angle
-            </div>
-            <div style={{ fontSize: '1.15rem', fontWeight: 800, color: '#0f172a', margin: '2px 0' }}>{Math.round(village.slope)}°</div>
-            <div style={{ fontSize: '0.72rem', color: '#d97706', fontWeight: 600 }}>{slopeStatus}</div>
-          </div>
-
-          <div style={{ background: '#f8fafc', padding: '10px 12px', borderRadius: '8px', border: '1px solid #f1f5f9' }}>
-            <div style={{ fontSize: '0.75rem', color: '#64748b', display: 'flex', alignItems: 'center', gap: '4px' }}>
-              <Waves size={14} color="#38bdf8" /> River Level
-            </div>
-            <div style={{ fontSize: '1.15rem', fontWeight: 800, color: '#0f172a', margin: '2px 0' }}>{(village.riverLevel || 1.4).toFixed(1)} m</div>
-            <div style={{ fontSize: '0.72rem', color: '#16a34a', fontWeight: 600 }}>{riverTrend} • Updated 6 min ago</div>
-          </div>
-        </div>
-      )}
-
-      {/* 5. WHY IS THIS AREA AT RISK? */}
-      {activeSubTab === 'factors' && (
-        <div style={{ background: '#f8fafc', padding: '12px 14px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
-          <h4 style={{ fontSize: '0.85rem', fontWeight: 700, margin: '0 0 8px 0', color: '#0f172a' }}>
-            WHY IS THIS AREA AT RISK?
-          </h4>
-          <ul style={{ margin: 0, paddingLeft: '18px', fontSize: '0.82rem', color: '#475569', lineHeight: '1.6' }}>
-            {village.rain > 15 && <li>🌧 Heavy rainfall detected in catchment area</li>}
-            {village.moisture > 60 && <li>💧 Soil moisture saturation is high</li>}
-            {village.slope > 35 && <li>⛰ Terrain slope incline is steep (41°)</li>}
-            <li>📈 Risk trend is actively monitored via live telemetry</li>
-          </ul>
-          <div style={{ fontSize: '0.7rem', color: '#94a3b8', marginTop: '8px', fontStyle: 'italic' }}>
-            Observed indicators contributing to the current risk assessment.
-          </div>
-        </div>
-      )}
-
-      {/* 6. TERRAIN & SATELLITE STATUS */}
-      {activeSubTab === 'terrain' && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '0.82rem', color: '#475569' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #f1f5f9', paddingBottom: '6px' }}>
-            <span>Elevation:</span>
-            <strong>2,890 m</strong>
-          </div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #f1f5f9', paddingBottom: '6px' }}>
-            <span>Slope:</span>
-            <strong>{Math.round(village.slope)}°</strong>
-          </div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #f1f5f9', paddingBottom: '6px' }}>
-            <span>Terrain Wetness:</span>
-            <strong style={{ color: village.moisture > 70 ? '#dc2626' : '#10b981' }}>
-              {village.moisture > 70 ? 'High' : 'Normal'}
-            </strong>
-          </div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #f1f5f9', paddingBottom: '6px' }}>
-            <span>Vegetation Condition:</span>
-            <strong style={{ color: '#0284c7' }}>Normal</strong>
-          </div>
-          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-            <span>Satellite Update:</span>
-            <strong>2 days ago</strong>
-          </div>
-        </div>
-      )}
-
-      {/* 7. NEARBY AREAS (RISK RANKING TABLE) */}
-      <div style={{ borderTop: '1px solid #f1f5f9', paddingTop: '12px' }}>
-        <h4 style={{ fontSize: '0.82rem', fontWeight: 700, margin: '0 0 8px 0', color: '#64748b', textTransform: 'uppercase' }}>
+      {/* 7. NEARBY AREAS (RISK RANKING TABLE) - ANCHORED AT BOTTOM OF CARD */}
+      <div style={{ borderTop: '1px solid var(--card-border)', paddingTop: '8px', flexShrink: 0 }}>
+        <h4 style={{ fontSize: '0.68rem', fontWeight: 800, margin: '0 0 6px 0', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
           NEARBY AREAS (RISK RANKING)
         </h4>
-        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.8rem' }}>
-          <thead>
-            <tr style={{ background: '#f8fafc', color: '#94a3b8', textAlign: 'left' }}>
-              <th style={{ padding: '6px 8px' }}>Location</th>
-              <th style={{ padding: '6px 8px' }}>Hazard</th>
-              <th style={{ padding: '6px 8px', textAlign: 'right' }}>Risk Score</th>
-            </tr>
-          </thead>
-          <tbody>
-            {nearbyVillages.map(v => {
-              const sym = v.score >= 80 ? '🔴' : v.score >= 60 ? '🟠' : v.score >= 40 ? '🟡' : '🟢';
-              return (
-                <tr 
-                  key={v.id}
-                  onClick={() => onSelectVillage && onSelectVillage(v.id)}
-                  style={{ borderBottom: '1px solid #f1f5f9', cursor: 'pointer', transition: 'background 0.2s' }}
-                  className="nearby-row-hover"
-                >
-                  <td style={{ padding: '6px 8px', fontWeight: 600, color: '#0f172a' }}>{v.name}</td>
-                  <td style={{ padding: '6px 8px', color: '#64748b' }}>Landslide</td>
-                  <td style={{ padding: '6px 8px', textAlign: 'right', fontWeight: 700 }}>
-                    <span style={{ marginRight: '4px' }}>{sym}</span>
-                    {v.score} / 100
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+        <div style={{ background: 'var(--input-bg)', border: '1px solid var(--card-border)', borderRadius: '8px', overflow: 'hidden' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.75rem' }}>
+            <thead>
+              <tr style={{ background: 'var(--card-bg)', color: 'var(--text-secondary)', textAlign: 'left', borderBottom: '1px solid var(--card-border)' }}>
+                <th style={{ padding: '6px 10px', fontWeight: 600 }}>Location</th>
+                <th style={{ padding: '6px 10px', fontWeight: 600 }}>Hazard</th>
+                <th style={{ padding: '6px 10px', fontWeight: 600, textAlign: 'right' }}>Risk Score</th>
+              </tr>
+            </thead>
+            <tbody style={{ color: 'var(--text-primary)' }}>
+              {nearbyVillages.map(v => {
+                const symColor = v.score >= 80 ? 'var(--risk-high)' : v.score >= 60 ? 'var(--risk-medium)' : v.score >= 40 ? 'var(--risk-medium)' : 'var(--risk-low)';
+                return (
+                  <tr 
+                    key={v.id}
+                    onClick={() => onSelectVillage && onSelectVillage(v.id)}
+                    style={{ borderBottom: '1px solid var(--card-border)', cursor: 'pointer', transition: 'background 0.15s ease' }}
+                    onMouseEnter={(e) => e.currentTarget.style.background = 'var(--accent-blue-glow)'}
+                    onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                  >
+                    <td style={{ padding: '6px 10px', fontWeight: 700, color: 'var(--text-primary)' }}>{v.name}</td>
+                    <td style={{ padding: '6px 10px', color: 'var(--text-secondary)' }}>{mode === 'flash_flood' ? 'Flash Flood' : 'Landslide'}</td>
+                    <td style={{ padding: '6px 10px', textAlign: 'right', fontWeight: 700 }}>
+                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', color: symColor }}>
+                        <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: symColor }}></span>
+                        {v.score} / 100
+                      </span>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
       </div>
-    </div>
+    </section>
   );
 }

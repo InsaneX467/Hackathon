@@ -1,16 +1,15 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { 
   Cpu, 
   ShieldCheck, 
   BarChart2, 
   Info, 
-  Layers, 
   Sliders, 
   CheckSquare, 
   Filter, 
-  Award,
   Zap,
-  RefreshCw
+  RefreshCw,
+  Activity
 } from 'lucide-react';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001';
@@ -145,8 +144,8 @@ const MODEL_ARCH_SPECS = {
 };
 
 export default function ModelInformationPage() {
-  const [selectedModelArch, setSelectedModelArch] = useState('xgb'); // 'xgb' | 'rf' | 'svm'
-  const [activeTab, setActiveTab] = useState('overview'); // 'overview' | 'performance' | 'simulator' | 'features' | 'history'
+  const [selectedModelArch, setSelectedModelArch] = useState('xgb');
+  const [activeTab, setActiveTab] = useState('overview');
   const [selectedCategoryFilter, setSelectedCategoryFilter] = useState('ALL');
 
   // Simulator state
@@ -163,29 +162,6 @@ export default function ModelInformationPage() {
   const filteredFeatures = selectedCategoryFilter === 'ALL'
     ? ALL_32_INPUT_FEATURES
     : ALL_32_INPUT_FEATURES.filter(f => f.category.toLowerCase().includes(selectedCategoryFilter.toLowerCase()));
-
-  const displayImportances = [
-    { feature: 'elevation', importance_percent: 13.94 },
-    { feature: 'spi', importance_percent: 7.40 },
-    { feature: 'tri', importance_percent: 5.52 },
-    { feature: 'EVI', importance_percent: 4.33 },
-    { feature: 'GLCMMean', importance_percent: 4.33 },
-    { feature: 'GRVI', importance_percent: 4.17 },
-    { feature: 'mNDWI', importance_percent: 3.98 },
-    { feature: 'slope', importance_percent: 3.57 },
-    { feature: 'mNDMI', importance_percent: 3.47 },
-    { feature: 'GLCMCorrelation', importance_percent: 3.29 },
-    { feature: 'BSI', importance_percent: 3.13 },
-    { feature: 'ARVI', importance_percent: 3.04 },
-    { feature: 'Entropy', importance_percent: 2.74 },
-    { feature: 'twi', importance_percent: 2.65 },
-    { feature: 'NDVI', importance_percent: 2.64 },
-    { feature: 'SAVI', importance_percent: 2.60 },
-    { feature: 'NDWI', importance_percent: 2.59 },
-    { feature: 'Contrast', importance_percent: 2.57 },
-    { feature: 'GNDVI', importance_percent: 2.55 },
-    { feature: 'curvature', importance_percent: 2.54 }
-  ];
 
   const handleRunSimulator = async () => {
     setSimulating(true);
@@ -215,7 +191,6 @@ export default function ModelInformationPage() {
       }
 
       if (!resData) {
-        // Fallback simulation calculation
         const slopeFactor = simSlope / 60.0;
         const rainFactor = simRain / 120.0;
         const satFactor = simMoisture / 100.0;
@@ -248,88 +223,103 @@ export default function ModelInformationPage() {
   };
 
   return (
-    <div className="page-container model-info-page" style={{ padding: '20px', color: '#0f172a', display: 'flex', flexDirection: 'column', gap: '20px', flex: 1, minHeight: '100%' }}>
-      
-      {/* Page Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-          <div style={{ width: '44px', height: '44px', borderRadius: '12px', background: '#e0f2fe', border: '1px solid #bae6fd', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <Cpu size={24} color="#0284c7" />
-          </div>
-          <div>
-            <h1 style={{ fontSize: '1.4rem', fontWeight: 800, margin: 0, color: '#0f172a' }}>Model Information & AI Architectures</h1>
-            <p style={{ color: '#64748b', fontSize: '0.84rem', margin: '3px 0 0 0' }}>
-              Inspect and switch between trained machine learning models (XGBoost, Random Forest, SVM) for landslide risk evaluation.
-            </p>
-          </div>
-        </div>
-
-        <div style={{ fontSize: '0.78rem', color: '#64748b', fontWeight: 600, background: '#ffffff', padding: '6px 14px', borderRadius: '8px', border: '1px solid #e2e8f0', boxShadow: '0 1px 3px rgba(0,0,0,0.03)' }}>
-          Active Selected Model: <strong style={{ color: '#0284c7' }}>{currentArch.shortName}</strong>
-        </div>
-      </div>
-
-      {/* Model Selector Bar */}
-      <div style={{
-        background: '#ffffff',
-        border: '1px solid #cbd5e1',
-        borderRadius: '12px',
-        padding: '14px 18px',
+    <div 
+      className="flex-1 flex flex-col p-5 space-y-4 max-w-[1700px] mx-auto w-full overflow-y-auto"
+      style={{
         display: 'flex',
-        alignItems: 'center',
-        justify: 'space-between',
-        flexWrap: 'wrap',
-        gap: '12px',
-        boxShadow: '0 2px 6px rgba(0,0,0,0.03)'
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <ShieldCheck size={20} color="#0284c7" />
-          <span style={{ fontSize: '0.88rem', fontWeight: 800, color: '#0f172a' }}>Select ML Architecture:</span>
+        flexDirection: 'column',
+        padding: '20px',
+        gap: '16px',
+        width: '100%',
+        boxSizing: 'border-box',
+        color: 'var(--text-primary)',
+        height: '100%',
+        overflowY: 'auto'
+      }}
+    >
+      
+      {/* Top Header Card: Select ML Architecture */}
+      <section 
+        className="w-full"
+        style={{
+          width: '100%',
+          background: 'var(--card-bg)',
+          borderRadius: '16px',
+          padding: '16px 20px',
+          border: '1px solid var(--card-border)',
+          boxShadow: 'var(--glass-shadow)',
+          display: 'flex',
+          flexWrap: 'wrap',
+          alignItems: 'center',
+          justify: 'space-between',
+          gap: '16px'
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <div style={{
+            width: '36px',
+            height: '36px',
+            borderRadius: '10px',
+            background: 'var(--accent-blue-glow)',
+            border: '1px solid var(--card-border)',
+            display: 'flex',
+            alignItems: 'center',
+            justify: 'center',
+            color: 'var(--accent-blue)'
+          }}>
+            <ShieldCheck size={20} />
+          </div>
+          <span style={{ fontSize: '1.05rem', fontWeight: 800, color: 'var(--text-primary)' }}>Select ML Architecture:</span>
         </div>
 
-        <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-          {Object.values(MODEL_ARCH_SPECS).map((arch) => (
-            <button
-              key={arch.id}
-              onClick={() => setSelectedModelArch(arch.id)}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                padding: '8px 16px',
-                borderRadius: '8px',
-                border: selectedModelArch === arch.id ? '2px solid #0284c7' : '1px solid #cbd5e1',
-                background: selectedModelArch === arch.id ? '#f0f9ff' : '#ffffff',
-                color: selectedModelArch === arch.id ? '#0284c7' : '#475569',
-                fontWeight: selectedModelArch === arch.id ? 800 : 600,
-                fontSize: '0.82rem',
-                cursor: 'pointer',
-                transition: 'all 0.15s ease'
-              }}
-            >
-              <Zap size={14} color={selectedModelArch === arch.id ? '#0284c7' : '#94a3b8'} />
-              <span>{arch.shortName}</span>
-              <span style={{
-                fontSize: '0.68rem',
-                padding: '2px 6px',
-                borderRadius: '10px',
-                background: arch.id === 'xgb' ? '#dcfce7' : (arch.id === 'rf' ? '#e0f2fe' : '#f1f5f9'),
-                color: arch.id === 'xgb' ? '#15803d' : (arch.id === 'rf' ? '#0369a1' : '#64748b'),
-                fontWeight: 700
-              }}>
-                {arch.accuracy}
-              </span>
-            </button>
-          ))}
+        <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '12px' }}>
+          {Object.values(MODEL_ARCH_SPECS).map((arch) => {
+            const isActive = selectedModelArch === arch.id;
+            return (
+              <button
+                key={arch.id}
+                onClick={() => setSelectedModelArch(arch.id)}
+                type="button"
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '10px',
+                  padding: '8px 18px',
+                  borderRadius: '12px',
+                  border: isActive ? '2px solid var(--accent-blue)' : '1px solid var(--card-border)',
+                  background: isActive ? 'var(--accent-blue-glow)' : 'var(--input-bg)',
+                  color: isActive ? 'var(--accent-blue)' : 'var(--text-secondary)',
+                  fontWeight: isActive ? 800 : 600,
+                  fontSize: '0.86rem',
+                  cursor: 'pointer',
+                  transition: 'all 0.15s ease'
+                }}
+              >
+                <Zap size={14} color={isActive ? 'var(--accent-blue)' : 'var(--text-muted)'} />
+                <span>{arch.shortName}</span>
+                <span style={{
+                  fontSize: '0.74rem',
+                  fontWeight: 800,
+                  padding: '2px 8px',
+                  borderRadius: '6px',
+                  background: arch.id === 'xgb' ? 'var(--risk-low-bg)' : (arch.id === 'rf' ? 'var(--accent-blue-glow)' : 'var(--input-bg)'),
+                  color: arch.id === 'xgb' ? 'var(--risk-low)' : (arch.id === 'rf' ? 'var(--accent-blue)' : 'var(--text-muted)'),
+                  border: `1px solid ${arch.id === 'xgb' ? 'var(--risk-low-border)' : (arch.id === 'rf' ? 'var(--panel-border-hover)' : 'var(--card-border)')}`
+                }}>
+                  {arch.accuracy}
+                </span>
+              </button>
+            );
+          })}
         </div>
-      </div>
+      </section>
 
-      {/* Navigation Sub-Tabs */}
-      <div style={{ display: 'flex', gap: '10px', borderBottom: '1px solid #e2e8f0', paddingBottom: '10px' }}>
+      {/* Sub-navigation Tabs */}
+      <nav style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '8px' }}>
         {[
           { id: 'overview', label: 'Overview' },
           { id: 'performance', label: 'Performance Metrics' },
-          { id: 'simulator', label: '⚡ Live Predictor Simulator' },
+          { id: 'simulator', label: 'Live Predictor Simulator', isBolt: true },
           { id: 'features', label: '32 Input Features' },
           { id: 'history', label: 'Version History Log' }
         ].map(tab => (
@@ -337,324 +327,280 @@ export default function ModelInformationPage() {
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
             style={{
-              padding: '8px 20px', borderRadius: '8px', border: 'none',
-              fontWeight: 700, fontSize: '0.84rem', cursor: 'pointer',
-              background: activeTab === tab.id ? '#0284c7' : '#ffffff',
-              color: activeTab === tab.id ? '#ffffff' : '#64748b',
-              boxShadow: activeTab === tab.id ? '0 2px 6px rgba(2, 132, 199, 0.25)' : 'none',
-              border: activeTab === tab.id ? '1px solid #0284c7' : '1px solid #cbd5e1',
-              transition: 'all 0.15s ease'
+              padding: '8px 18px',
+              borderRadius: '12px',
+              border: activeTab === tab.id ? '1px solid var(--accent-blue)' : '1px solid var(--card-border)',
+              background: activeTab === tab.id ? 'var(--accent-blue)' : 'var(--card-bg)',
+              color: activeTab === tab.id ? '#ffffff' : 'var(--text-secondary)',
+              fontWeight: 700,
+              fontSize: '0.84rem',
+              cursor: 'pointer',
+              boxShadow: activeTab === tab.id ? '0 4px 14px var(--accent-blue-glow)' : 'none',
+              transition: 'all 0.15s ease',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px'
             }}
           >
-            {tab.label}
+            {tab.isBolt && <Zap size={14} color="#f59e0b" />}
+            <span>{tab.label}</span>
           </button>
         ))}
-      </div>
+      </nav>
 
       {/* TAB 1: OVERVIEW */}
       {activeTab === 'overview' && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', flex: 1 }}>
+        <section style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '16px' }}>
           
-          {/* Top Row 3 Equalized Cards */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px', alignItems: 'stretch' }}>
-            
-            {/* Card 1: Model Specs */}
-            <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '20px', boxShadow: '0 2px 8px rgba(0,0,0,0.03)', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-              <div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <ShieldCheck size={20} color="#0284c7" />
-                    <h3 style={{ fontSize: '1rem', fontWeight: 700, margin: 0, color: '#0f172a' }}>Selected Architecture</h3>
-                  </div>
-                  <span style={{ padding: '3px 10px', borderRadius: '12px', background: '#dcfce7', color: '#15803d', fontSize: '0.72rem', fontWeight: 700, border: '1px solid #bbf7d0' }}>
-                    {currentArch.status}
-                  </span>
+          {/* Card 1: Selected Architecture */}
+          <div style={{
+            background: 'var(--card-bg)',
+            borderRadius: '16px',
+            padding: '20px',
+            border: '1px solid var(--card-border)',
+            boxShadow: 'var(--glass-shadow)',
+            display: 'flex',
+            flexDirection: 'column',
+            justify: 'space-between',
+            gap: '16px'
+          }}>
+            <div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: '12px', borderBottom: '1px solid var(--card-border)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <ShieldCheck size={18} color="var(--accent-blue)" />
+                  <h2 style={{ fontSize: '0.95rem', fontWeight: 800, margin: 0, color: 'var(--text-primary)' }}>Selected Architecture</h2>
                 </div>
-
-                <p style={{ fontSize: '0.82rem', color: '#64748b', lineHeight: '1.5', marginBottom: '14px' }}>
-                  {currentArch.description}
-                </p>
-
-                <table style={{ width: '100%', fontSize: '0.8rem', borderCollapse: 'collapse' }}>
-                  <tbody>
-                    <tr style={{ borderBottom: '1px solid #f1f5f9' }}>
-                      <td style={{ padding: '8px 0', color: '#64748b' }}>Algorithm Name</td>
-                      <td style={{ padding: '8px 0', fontWeight: 700, textAlign: 'right', color: '#0f172a' }}>{currentArch.name}</td>
-                    </tr>
-                    <tr style={{ borderBottom: '1px solid #f1f5f9' }}>
-                      <td style={{ padding: '8px 0', color: '#64748b' }}>Training Dataset</td>
-                      <td style={{ padding: '8px 0', fontWeight: 700, textAlign: 'right', color: '#0284c7' }}>DataUploader/IndLands</td>
-                    </tr>
-                    <tr style={{ borderBottom: '1px solid #f1f5f9' }}>
-                      <td style={{ padding: '8px 0', color: '#64748b' }}>Training Samples</td>
-                      <td style={{ padding: '8px 0', fontWeight: 700, textAlign: 'right', color: '#0f172a' }}>{currentArch.samples}</td>
-                    </tr>
-                    <tr style={{ borderBottom: '1px solid #f1f5f9' }}>
-                      <td style={{ padding: '8px 0', color: '#64748b' }}>Features Count</td>
-                      <td style={{ padding: '8px 0', fontWeight: 700, textAlign: 'right', color: '#0f172a' }}>32 Remote Sensing Indices</td>
-                    </tr>
-                    <tr>
-                      <td style={{ padding: '8px 0', color: '#64748b' }}>Model Build</td>
-                      <td style={{ padding: '8px 0', fontWeight: 700, textAlign: 'right', color: '#0f172a' }}>{currentArch.version}</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-
-            {/* Card 2: Test Set Performance */}
-            <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '20px', boxShadow: '0 2px 8px rgba(0,0,0,0.03)', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-              <div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '14px' }}>
-                  <BarChart2 size={20} color="#0284c7" />
-                  <h3 style={{ fontSize: '1rem', fontWeight: 700, margin: 0, color: '#0f172a' }}>Accuracy & Validation Metrics</h3>
-                </div>
-
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                  <div style={{ background: '#f0f9ff', border: '1px solid #bae6fd', borderRadius: '10px', padding: '12px', textAlign: 'center' }}>
-                    <div style={{ fontSize: '0.72rem', color: '#0369a1', fontWeight: 700, textTransform: 'uppercase' }}>Accuracy</div>
-                    <div style={{ fontSize: '1.4rem', fontWeight: 800, color: '#0284c7', margin: '4px 0 0 0' }}>
-                      {currentArch.accuracy}
-                    </div>
-                  </div>
-
-                  <div style={{ background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '10px', padding: '12px', textAlign: 'center' }}>
-                    <div style={{ fontSize: '0.72rem', color: '#15803d', fontWeight: 700, textTransform: 'uppercase' }}>Precision</div>
-                    <div style={{ fontSize: '1.4rem', fontWeight: 800, color: '#16a34a', margin: '4px 0 0 0' }}>
-                      {currentArch.precision}
-                    </div>
-                  </div>
-
-                  <div style={{ background: '#fffbeb', border: '1px solid #fef3c7', borderRadius: '10px', padding: '12px', textAlign: 'center' }}>
-                    <div style={{ fontSize: '0.72rem', color: '#b45309', fontWeight: 700, textTransform: 'uppercase' }}>Recall (Safety)</div>
-                    <div style={{ fontSize: '1.4rem', fontWeight: 800, color: '#d97706', margin: '4px 0 0 0' }}>
-                      {currentArch.recall}
-                    </div>
-                  </div>
-
-                  <div style={{ background: '#faf5ff', border: '1px solid #e9d5ff', borderRadius: '10px', padding: '12px', textAlign: 'center' }}>
-                    <div style={{ fontSize: '0.72rem', color: '#6b21a8', fontWeight: 700, textTransform: 'uppercase' }}>ROC-AUC</div>
-                    <div style={{ fontSize: '1.4rem', fontWeight: 800, color: '#9333ea', margin: '4px 0 0 0' }}>
-                      {currentArch.rocAuc}
-                    </div>
-                  </div>
-                </div>
+                <span style={{
+                  background: 'var(--risk-low-bg)',
+                  color: 'var(--risk-low)',
+                  border: '1px solid var(--risk-low-border)',
+                  fontSize: '0.68rem',
+                  fontWeight: 800,
+                  padding: '3px 10px',
+                  borderRadius: '20px',
+                  textTransform: 'uppercase'
+                }}>
+                  {currentArch.status}
+                </span>
               </div>
 
-              <div style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '14px', textAlign: 'center' }}>
-                Evaluated on {currentArch.testSamples}
-              </div>
-            </div>
+              <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', lineHeight: '1.5', marginTop: '12px' }}>
+                {currentArch.description}
+              </p>
 
-            {/* Card 3: Model Prediction Scope */}
-            <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '20px', boxShadow: '0 2px 8px rgba(0,0,0,0.03)', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-              <div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
-                  <Info size={20} color="#0284c7" />
-                  <h3 style={{ fontSize: '1rem', fontWeight: 700, margin: 0, color: '#0f172a' }}>What {currentArch.shortName} Predicts</h3>
+              <div style={{ marginTop: '16px', display: 'flex', flexDirection: 'column', gap: '10px', fontSize: '0.8rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span style={{ color: 'var(--text-muted)' }}>Algorithm Name</span>
+                  <span style={{ color: 'var(--text-primary)', fontWeight: 700 }}>{currentArch.name}</span>
                 </div>
-
-                <ul style={{ margin: 0, paddingLeft: '18px', fontSize: '0.82rem', color: '#475569', lineHeight: '1.6' }}>
-                  <li>Continuous terrain susceptibility probability score (0.0 to 1.0)</li>
-                  <li>Combined real-time IoT rainfall and soil moisture trigger boost</li>
-                  <li>Landslide risk categories: LOW, MEDIUM, HIGH</li>
-                  <li>Feature contribution breakdown per satellite pixel</li>
-                </ul>
-              </div>
-
-              <div style={{
-                background: '#f8fafc',
-                border: '1px solid #e2e8f0',
-                borderRadius: '8px',
-                padding: '10px 12px',
-                fontSize: '0.75rem',
-                color: '#64748b',
-                display: 'flex',
-                gap: '8px',
-                alignItems: 'center'
-              }}>
-                <Info size={16} color="#0284c7" style={{ flexShrink: 0 }} />
-                <span><strong>Multi-Model Pipeline:</strong> Switch algorithms to compare risk predictions and confidence.</span>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span style={{ color: 'var(--text-muted)' }}>Training Dataset</span>
+                  <span style={{ color: 'var(--accent-blue)', fontWeight: 700 }}>DataUploader/IndLands</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span style={{ color: 'var(--text-muted)' }}>Training Samples</span>
+                  <span style={{ color: 'var(--text-primary)', fontWeight: 700 }}>{currentArch.samples}</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span style={{ color: 'var(--text-muted)' }}>Features Count</span>
+                  <span style={{ color: 'var(--text-primary)', fontWeight: 700 }}>32 Remote Sensing Indices</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', paddingTop: '8px', borderTop: '1px solid var(--card-border)' }}>
+                  <span style={{ color: 'var(--text-muted)' }}>Model Build</span>
+                  <span style={{ color: 'var(--text-primary)', fontWeight: 700 }}>{currentArch.version}</span>
+                </div>
               </div>
             </div>
           </div>
 
-          {/* Bottom Row: Feature Sensitivity & Importance Rankings */}
-          <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '20px', flex: 1, display: 'flex', flexDirection: 'column', boxShadow: '0 2px 8px rgba(0,0,0,0.03)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-              <h3 style={{ fontSize: '1.05rem', fontWeight: 700, margin: 0, color: '#0f172a', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <Layers size={20} color="#0284c7" /> Top Contributing Remote Sensing Factors ({currentArch.shortName})
-              </h3>
-              <span style={{ fontSize: '0.78rem', color: '#0284c7', fontWeight: 600 }}>Top 5 Contributing Remote Sensing Factors</span>
+          {/* Card 2: Accuracy & Validation Metrics */}
+          <div style={{
+            background: 'var(--card-bg)',
+            borderRadius: '16px',
+            padding: '20px',
+            border: '1px solid var(--card-border)',
+            boxShadow: 'var(--glass-shadow)',
+            display: 'flex',
+            flexDirection: 'column',
+            justify: 'space-between',
+            gap: '16px'
+          }}>
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', paddingBottom: '12px', borderBottom: '1px solid var(--card-border)' }}>
+                <BarChart2 size={18} color="var(--accent-blue)" />
+                <h2 style={{ fontSize: '0.95rem', fontWeight: 800, margin: 0, color: 'var(--text-primary)' }}>Accuracy & Validation Metrics</h2>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginTop: '14px' }}>
+                <div style={{ background: 'var(--accent-blue-glow)', border: '1px solid var(--panel-border-hover)', borderRadius: '12px', padding: '12px', textAlign: 'center' }}>
+                  <span style={{ fontSize: '0.68rem', fontWeight: 800, color: 'var(--accent-blue)', textTransform: 'uppercase' }}>ACCURACY</span>
+                  <div style={{ fontSize: '1.6rem', fontWeight: 900, color: 'var(--accent-blue)', marginTop: '4px' }}>{currentArch.accuracy}</div>
+                </div>
+                <div style={{ background: 'var(--risk-low-bg)', border: '1px solid var(--risk-low-border)', borderRadius: '12px', padding: '12px', textAlign: 'center' }}>
+                  <span style={{ fontSize: '0.68rem', fontWeight: 800, color: 'var(--risk-low)', textTransform: 'uppercase' }}>PRECISION</span>
+                  <div style={{ fontSize: '1.6rem', fontWeight: 900, color: 'var(--risk-low)', marginTop: '4px' }}>{currentArch.precision}</div>
+                </div>
+                <div style={{ background: 'var(--risk-medium-bg)', border: '1px solid var(--risk-medium-border)', borderRadius: '12px', padding: '12px', textAlign: 'center' }}>
+                  <span style={{ fontSize: '0.68rem', fontWeight: 800, color: 'var(--risk-medium)', textTransform: 'uppercase' }}>RECALL (SAFETY)</span>
+                  <div style={{ fontSize: '1.6rem', fontWeight: 900, color: 'var(--risk-medium)', marginTop: '4px' }}>{currentArch.recall}</div>
+                </div>
+                <div style={{ background: 'rgba(168, 85, 247, 0.12)', border: '1px solid rgba(168, 85, 247, 0.3)', borderRadius: '12px', padding: '12px', textAlign: 'center' }}>
+                  <span style={{ fontSize: '0.68rem', fontWeight: 800, color: '#a855f7', textTransform: 'uppercase' }}>ROC-AUC</span>
+                  <div style={{ fontSize: '1.6rem', fontWeight: 900, color: '#a855f7', marginTop: '4px' }}>{currentArch.rocAuc}</div>
+                </div>
+              </div>
             </div>
 
-            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '14px' }}>
-              {[
-                { name: 'DEM Elevation (elevation)', category: 'Terrain Topography', weight: 13.94, impact: 'High Impact', color: '#dc2626' },
-                { name: 'Stream Power Index (spi)', category: 'Erosion Potential', weight: 7.40, impact: 'High Impact', color: '#dc2626' },
-                { name: 'Terrain Ruggedness Index (tri)', category: 'Morphology Relief', weight: 5.52, impact: 'High Impact', color: '#dc2626' },
-                { name: 'Enhanced Vegetation Index (EVI)', category: 'Land Cover Sentinel-2', weight: 4.33, impact: 'Medium Impact', color: '#d97706' },
-                { name: 'GLCM Texture Mean (GLCMMean)', category: 'Radar Backscatter', weight: 4.33, impact: 'Medium Impact', color: '#d97706' }
-              ].map((feat, idx) => (
-                <div key={idx} style={{ background: '#f8fafc', border: '1px solid #f1f5f9', borderRadius: '10px', padding: '12px 16px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', fontSize: '0.85rem' }}>
-                    <div style={{ fontWeight: 700, color: '#0f172a' }}>{feat.name} <span style={{ fontWeight: 400, color: '#64748b', fontSize: '0.78rem' }}>({feat.category})</span></div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-                      <span style={{ fontWeight: 700, color: '#0f172a' }}>{feat.weight}% Importance</span>
-                      <span style={{ fontSize: '0.72rem', fontWeight: 700, color: feat.color, background: '#ffffff', padding: '3px 10px', borderRadius: '12px', border: `1px solid ${feat.color}` }}>{feat.impact}</span>
-                    </div>
-                  </div>
-                  <div style={{ height: '7px', width: '100%', background: '#e2e8f0', borderRadius: '4px', overflow: 'hidden' }}>
-                    <div style={{ height: '100%', width: `${feat.weight * 6}%`, background: feat.color, borderRadius: '4px' }} />
-                  </div>
-                </div>
-              ))}
+            <div style={{ paddingTop: '10px', borderTop: '1px solid var(--card-border)', textAlign: 'center' }}>
+              <span style={{ fontSize: '0.78rem', color: 'var(--text-secondary)' }}>Evaluated on {currentArch.testSamples}</span>
             </div>
           </div>
-        </div>
+
+          {/* Card 3: What XGBoost (GBDT) Predicts */}
+          <div style={{
+            background: 'var(--card-bg)',
+            borderRadius: '16px',
+            padding: '20px',
+            border: '1px solid var(--card-border)',
+            boxShadow: 'var(--glass-shadow)',
+            display: 'flex',
+            flexDirection: 'column',
+            justify: 'space-between',
+            gap: '16px'
+          }}>
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', paddingBottom: '12px', borderBottom: '1px solid var(--card-border)' }}>
+                <Info size={18} color="var(--accent-blue)" />
+                <h2 style={{ fontSize: '0.95rem', fontWeight: 800, margin: 0, color: 'var(--text-primary)' }}>What {currentArch.shortName} Predicts</h2>
+              </div>
+
+              <ul style={{ marginTop: '14px', margin: 0, paddingLeft: '16px', fontSize: '0.8rem', color: 'var(--text-secondary)', lineHeight: '1.6' }}>
+                <li style={{ marginBottom: '6px' }}>Continuous terrain susceptibility probability score (0.0 to 1.0)</li>
+                <li style={{ marginBottom: '6px' }}>Combined real-time IoT rainfall and soil moisture trigger boost</li>
+                <li style={{ marginBottom: '6px' }}>Landslide risk categories: <strong style={{ color: 'var(--text-primary)' }}>LOW, MEDIUM, HIGH</strong></li>
+                <li>Feature contribution breakdown per satellite pixel</li>
+              </ul>
+            </div>
+
+            <div style={{
+              background: 'var(--input-bg)',
+              border: '1px solid var(--card-border)',
+              borderRadius: '12px',
+              padding: '12px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '10px',
+              fontSize: '0.78rem',
+              color: 'var(--text-secondary)'
+            }}>
+              <Info size={16} color="var(--accent-blue)" style={{ flexShrink: 0 }} />
+              <div>
+                <strong style={{ color: 'var(--text-primary)' }}>Multi-Model Pipeline:</strong> Switch algorithms above to compare risk predictions and confidence.
+              </div>
+            </div>
+          </div>
+
+        </section>
       )}
 
       {/* TAB 2: PERFORMANCE METRICS */}
       {activeTab === 'performance' && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', flex: 1 }}>
-          
-          {/* Summary Metric Badges Header Bar */}
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(5, 1fr)',
-            gap: '14px'
-          }}>
-            <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '16px', textAlign: 'center', boxShadow: '0 2px 6px rgba(0,0,0,0.02)' }}>
-              <div style={{ fontSize: '0.75rem', color: '#0369a1', fontWeight: 700, textTransform: 'uppercase' }}>Model Accuracy</div>
-              <div style={{ fontSize: '1.6rem', fontWeight: 800, color: '#0284c7', marginTop: '4px' }}>
-                {currentArch.accuracy}
-              </div>
-              <div style={{ fontSize: '0.7rem', color: '#64748b', marginTop: '2px' }}>{currentArch.shortName}</div>
+        <section style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '12px' }}>
+            <div style={{ background: 'var(--card-bg)', border: '1px solid var(--card-border)', borderRadius: '14px', padding: '14px', textAlign: 'center' }}>
+              <div style={{ fontSize: '0.7rem', color: 'var(--accent-blue)', fontWeight: 800, textTransform: 'uppercase' }}>Model Accuracy</div>
+              <div style={{ fontSize: '1.5rem', fontWeight: 900, color: 'var(--text-primary)', marginTop: '4px' }}>{currentArch.accuracy}</div>
+              <div style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', marginTop: '2px' }}>{currentArch.shortName}</div>
             </div>
-
-            <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '16px', textAlign: 'center', boxShadow: '0 2px 6px rgba(0,0,0,0.02)' }}>
-              <div style={{ fontSize: '0.75rem', color: '#15803d', fontWeight: 700, textTransform: 'uppercase' }}>Precision</div>
-              <div style={{ fontSize: '1.6rem', fontWeight: 800, color: '#16a34a', marginTop: '4px' }}>
-                {currentArch.precision}
-              </div>
-              <div style={{ fontSize: '0.7rem', color: '#64748b', marginTop: '2px' }}>Low False Positive Rate</div>
+            <div style={{ background: 'var(--card-bg)', border: '1px solid var(--card-border)', borderRadius: '14px', padding: '14px', textAlign: 'center' }}>
+              <div style={{ fontSize: '0.7rem', color: 'var(--risk-low)', fontWeight: 800, textTransform: 'uppercase' }}>Precision</div>
+              <div style={{ fontSize: '1.5rem', fontWeight: 900, color: 'var(--risk-low)', marginTop: '4px' }}>{currentArch.precision}</div>
+              <div style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', marginTop: '2px' }}>Low False Positives</div>
             </div>
-
-            <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '16px', textAlign: 'center', boxShadow: '0 2px 6px rgba(0,0,0,0.02)' }}>
-              <div style={{ fontSize: '0.75rem', color: '#b45309', fontWeight: 700, textTransform: 'uppercase' }}>Recall Sensitivity</div>
-              <div style={{ fontSize: '1.6rem', fontWeight: 800, color: '#d97706', marginTop: '4px' }}>
-                {currentArch.recall}
-              </div>
-              <div style={{ fontSize: '0.7rem', color: '#64748b', marginTop: '2px' }}>Active Hazard Capture</div>
+            <div style={{ background: 'var(--card-bg)', border: '1px solid var(--card-border)', borderRadius: '14px', padding: '14px', textAlign: 'center' }}>
+              <div style={{ fontSize: '0.7rem', color: 'var(--risk-medium)', fontWeight: 800, textTransform: 'uppercase' }}>Recall Sensitivity</div>
+              <div style={{ fontSize: '1.5rem', fontWeight: 900, color: 'var(--risk-medium)', marginTop: '4px' }}>{currentArch.recall}</div>
+              <div style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', marginTop: '2px' }}>Active Hazard Capture</div>
             </div>
-
-            <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '16px', textAlign: 'center', boxShadow: '0 2px 6px rgba(0,0,0,0.02)' }}>
-              <div style={{ fontSize: '0.75rem', color: '#4338ca', fontWeight: 700, textTransform: 'uppercase' }}>F1-Score</div>
-              <div style={{ fontSize: '1.6rem', fontWeight: 800, color: '#4f46e5', marginTop: '4px' }}>
-                {currentArch.f1}
-              </div>
-              <div style={{ fontSize: '0.7rem', color: '#64748b', marginTop: '2px' }}>Harmonic Mean</div>
+            <div style={{ background: 'var(--card-bg)', border: '1px solid var(--card-border)', borderRadius: '14px', padding: '14px', textAlign: 'center' }}>
+              <div style={{ fontSize: '0.7rem', color: '#818cf8', fontWeight: 800, textTransform: 'uppercase' }}>F1-Score</div>
+              <div style={{ fontSize: '1.5rem', fontWeight: 900, color: '#818cf8', marginTop: '4px' }}>{currentArch.f1}</div>
+              <div style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', marginTop: '2px' }}>Harmonic Mean</div>
             </div>
-
-            <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '16px', textAlign: 'center', boxShadow: '0 2px 6px rgba(0,0,0,0.02)' }}>
-              <div style={{ fontSize: '0.75rem', color: '#6b21a8', fontWeight: 700, textTransform: 'uppercase' }}>ROC-AUC Area</div>
-              <div style={{ fontSize: '1.6rem', fontWeight: 800, color: '#9333ea', marginTop: '4px' }}>
-                {currentArch.rocAuc}
-              </div>
-              <div style={{ fontSize: '0.7rem', color: '#64748b', marginTop: '2px' }}>Class Separation Ability</div>
+            <div style={{ background: 'var(--card-bg)', border: '1px solid var(--card-border)', borderRadius: '14px', padding: '14px', textAlign: 'center' }}>
+              <div style={{ fontSize: '0.7rem', color: '#c084fc', fontWeight: 800, textTransform: 'uppercase' }}>ROC-AUC Area</div>
+              <div style={{ fontSize: '1.5rem', fontWeight: 900, color: '#c084fc', marginTop: '4px' }}>{currentArch.rocAuc}</div>
+              <div style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', marginTop: '2px' }}>Separation Power</div>
             </div>
           </div>
 
-          {/* 2 Equal Columns: Confusion Matrix + Model Parameters */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '20px', alignItems: 'stretch' }}>
-            
-            {/* Confusion Matrix Card */}
-            <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '20px', boxShadow: '0 2px 8px rgba(0,0,0,0.03)', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-              <div>
-                <h3 style={{ fontSize: '1.05rem', fontWeight: 700, marginBottom: '16px', color: '#0f172a', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <CheckSquare size={20} color="#0284c7" /> Confusion Matrix ({currentArch.shortName})
-                </h3>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '16px' }}>
+            {/* Confusion Matrix */}
+            <div style={{ background: 'var(--card-bg)', border: '1px solid var(--card-border)', borderRadius: '16px', padding: '20px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', paddingBottom: '12px', borderBottom: '1px solid var(--card-border)' }}>
+                <CheckSquare size={18} color="var(--accent-blue)" />
+                <h3 style={{ fontSize: '0.95rem', fontWeight: 800, margin: 0, color: 'var(--text-primary)' }}>Confusion Matrix ({currentArch.shortName})</h3>
+              </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
-                  <div style={{ background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '12px', padding: '18px', textAlign: 'center' }}>
-                    <div style={{ fontSize: '0.75rem', color: '#15803d', fontWeight: 700, textTransform: 'uppercase' }}>TRUE NEGATIVE (STABLE)</div>
-                    <div style={{ fontSize: '1.8rem', fontWeight: 800, color: '#16a34a', margin: '6px 0 2px 0' }}>{currentArch.tn}</div>
-                    <div style={{ fontSize: '0.75rem', color: '#64748b' }}>Correctly predicted safe terrain</div>
-                  </div>
-
-                  <div style={{ background: '#fffbeb', border: '1px solid #fef3c7', borderRadius: '12px', padding: '18px', textAlign: 'center' }}>
-                    <div style={{ fontSize: '0.75rem', color: '#b45309', fontWeight: 700, textTransform: 'uppercase' }}>FALSE POSITIVE (FALSE ALARM)</div>
-                    <div style={{ fontSize: '1.8rem', fontWeight: 800, color: '#d97706', margin: '6px 0 2px 0' }}>{currentArch.fp}</div>
-                    <div style={{ fontSize: '0.75rem', color: '#64748b' }}>Predicted risk on safe slope</div>
-                  </div>
-
-                  <div style={{ background: '#fef2f2', border: '1px solid #fecaca', borderRadius: '12px', padding: '18px', textAlign: 'center' }}>
-                    <div style={{ fontSize: '0.75rem', color: '#b91c1c', fontWeight: 700, textTransform: 'uppercase' }}>FALSE NEGATIVE (MISSED)</div>
-                    <div style={{ fontSize: '1.8rem', fontWeight: 800, color: '#dc2626', margin: '6px 0 2px 0' }}>{currentArch.fn}</div>
-                    <div style={{ fontSize: '0.75rem', color: '#64748b' }}>Missed high risk event</div>
-                  </div>
-
-                  <div style={{ background: '#f0f9ff', border: '1px solid #bae6fd', borderRadius: '12px', padding: '18px', textAlign: 'center' }}>
-                    <div style={{ fontSize: '0.75rem', color: '#0369a1', fontWeight: 700, textTransform: 'uppercase' }}>TRUE POSITIVE (HAZARD)</div>
-                    <div style={{ fontSize: '1.8rem', fontWeight: 800, color: '#0284c7', margin: '6px 0 2px 0' }}>{currentArch.tp}</div>
-                    <div style={{ fontSize: '0.75rem', color: '#64748b' }}>Correctly identified active hazard</div>
-                  </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginTop: '14px' }}>
+                <div style={{ background: 'var(--risk-low-bg)', border: '1px solid var(--risk-low-border)', borderRadius: '12px', padding: '12px', textAlign: 'center' }}>
+                  <div style={{ fontSize: '0.68rem', color: 'var(--risk-low)', fontWeight: 800 }}>TRUE NEGATIVE (STABLE)</div>
+                  <div style={{ fontSize: '1.6rem', fontWeight: 900, color: 'var(--risk-low)', margin: '4px 0' }}>{currentArch.tn}</div>
+                  <div style={{ fontSize: '0.72rem', color: 'var(--text-secondary)' }}>Correct safe predictions</div>
+                </div>
+                <div style={{ background: 'var(--risk-medium-bg)', border: '1px solid var(--risk-medium-border)', borderRadius: '12px', padding: '12px', textAlign: 'center' }}>
+                  <div style={{ fontSize: '0.68rem', color: 'var(--risk-medium)', fontWeight: 800 }}>FALSE POSITIVE (ALARM)</div>
+                  <div style={{ fontSize: '1.6rem', fontWeight: 900, color: 'var(--risk-medium)', margin: '4px 0' }}>{currentArch.fp}</div>
+                  <div style={{ fontSize: '0.72rem', color: 'var(--text-secondary)' }}>False risk alerts</div>
+                </div>
+                <div style={{ background: 'var(--risk-high-bg)', border: '1px solid var(--risk-high-border)', borderRadius: '12px', padding: '12px', textAlign: 'center' }}>
+                  <div style={{ fontSize: '0.68rem', color: 'var(--risk-high)', fontWeight: 800 }}>FALSE NEGATIVE (MISSED)</div>
+                  <div style={{ fontSize: '1.6rem', fontWeight: 900, color: 'var(--risk-high)', margin: '4px 0' }}>{currentArch.fn}</div>
+                  <div style={{ fontSize: '0.72rem', color: 'var(--text-secondary)' }}>Missed risk events</div>
+                </div>
+                <div style={{ background: 'var(--accent-blue-glow)', border: '1px solid var(--panel-border-hover)', borderRadius: '12px', padding: '12px', textAlign: 'center' }}>
+                  <div style={{ fontSize: '0.68rem', color: 'var(--accent-blue)', fontWeight: 800 }}>TRUE POSITIVE (HAZARD)</div>
+                  <div style={{ fontSize: '1.6rem', fontWeight: 900, color: 'var(--accent-blue)', margin: '4px 0' }}>{currentArch.tp}</div>
+                  <div style={{ fontSize: '0.72rem', color: 'var(--text-secondary)' }}>Correct hazard detections</div>
                 </div>
               </div>
-
-              <div style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '14px', textAlign: 'center' }}>
-                Evaluated on {currentArch.testSamples}
-              </div>
             </div>
 
-            {/* Model Hyperparameters Card */}
-            <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '20px', boxShadow: '0 2px 8px rgba(0,0,0,0.03)', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-              <div>
-                <h3 style={{ fontSize: '1.05rem', fontWeight: 700, marginBottom: '16px', color: '#0f172a', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <Sliders size={20} color="#0284c7" /> Hyperparameters ({currentArch.shortName})
-                </h3>
-                <table style={{ width: '100%', fontSize: '0.85rem', borderCollapse: 'collapse' }}>
-                  <tbody>
-                    {currentArch.hyperparams.map((hp, idx) => (
-                      <tr key={idx} style={{ borderBottom: '1px solid #f1f5f9' }}>
-                        <td style={{ padding: '10px 0', color: '#64748b' }}>{hp.name}</td>
-                        <td style={{ padding: '10px 0', fontWeight: 700, textAlign: 'right', color: '#0f172a' }}>{hp.value}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+            {/* Hyperparameters */}
+            <div style={{ background: 'var(--card-bg)', border: '1px solid var(--card-border)', borderRadius: '16px', padding: '20px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', paddingBottom: '12px', borderBottom: '1px solid var(--card-border)' }}>
+                <Sliders size={18} color="var(--accent-blue)" />
+                <h3 style={{ fontSize: '0.95rem', fontWeight: 800, margin: 0, color: 'var(--text-primary)' }}>Hyperparameters ({currentArch.shortName})</h3>
+              </div>
+              <div style={{ marginTop: '12px', display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '0.8rem' }}>
+                {currentArch.hyperparams.map((hp, idx) => (
+                  <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: '1px solid var(--card-border)' }}>
+                    <span style={{ color: 'var(--text-muted)' }}>{hp.name}</span>
+                    <span style={{ color: 'var(--text-primary)', fontWeight: 700 }}>{hp.value}</span>
+                  </div>
+                ))}
               </div>
             </div>
-
           </div>
-
-        </div>
+        </section>
       )}
 
       {/* TAB 3: LIVE PREDICTOR SIMULATOR */}
       {activeTab === 'simulator' && (
-        <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '16px', padding: '24px', display: 'flex', flexDirection: 'column', gap: '20px', boxShadow: '0 4px 20px rgba(0,0,0,0.04)' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px', borderBottom: '1px solid #f1f5f9', paddingBottom: '14px' }}>
+        <section style={{ background: 'var(--card-bg)', border: '1px solid var(--card-border)', borderRadius: '16px', padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: '12px', paddingBottom: '12px', borderBottom: '1px solid var(--card-border)' }}>
             <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-                <div style={{ width: '28px', height: '28px', borderRadius: '8px', background: '#e0f2fe', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <Zap size={16} color="#0284c7" />
-                </div>
-                <h3 style={{ fontSize: '1.15rem', fontWeight: 800, margin: 0, color: '#0f172a' }}>
-                  Live AI Landslide Risk Simulator
-                </h3>
-                <span style={{ fontSize: '0.72rem', fontWeight: 800, padding: '3px 10px', borderRadius: '12px', background: '#0284c7', color: '#ffffff' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Zap size={18} color="#f59e0b" />
+                <h3 style={{ fontSize: '1rem', fontWeight: 800, margin: 0, color: 'var(--text-primary)' }}>Live AI Landslide Risk Simulator</h3>
+                <span style={{ fontSize: '0.72rem', fontWeight: 800, padding: '2px 8px', borderRadius: '8px', background: 'var(--accent-blue-glow)', color: 'var(--accent-blue)', border: '1px solid var(--panel-border-hover)' }}>
                   {currentArch.shortName}
                 </span>
               </div>
-              <p style={{ fontSize: '0.82rem', color: '#64748b', margin: 0 }}>
-                Adjust real-time hydrometeorological triggers and terrain parameters to execute instant AI inference.
-              </p>
+              <p style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', margin: '4px 0 0 0' }}>Adjust trigger parameters to calculate instant AI hazard inference scores.</p>
             </div>
 
-            {/* Real-Time Telemetry & Scenarios */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-              <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#64748b' }}>Live Data & Scenarios:</span>
               <button
                 onClick={async () => {
                   try {
@@ -669,295 +615,192 @@ export default function ModelInformationPage() {
                     }
                   } catch (e) { console.error('Live telemetry fetch failed:', e); }
                 }}
-                style={{ padding: '5px 12px', borderRadius: '14px', border: '1px solid #7dd3fc', background: '#e0f2fe', color: '#0369a1', fontSize: '0.74rem', fontWeight: 800, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
+                style={{ padding: '6px 12px', borderRadius: '10px', border: '1px solid var(--panel-border-hover)', background: 'var(--accent-blue-glow)', color: 'var(--accent-blue)', fontSize: '0.76rem', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}
               >
-                📡 Fetch Live Open-Meteo Telemetry
+                <Activity size={14} />
+                <span>Fetch Live Open-Meteo Telemetry</span>
               </button>
               <button
                 onClick={() => { setSimSlope(48); setSimTwi(8.2); setSimNdvi(0.18); setSimRain(165); setSimMoisture(88); }}
-                style={{ padding: '5px 10px', borderRadius: '14px', border: '1px solid #fecaca', background: '#fef2f2', color: '#dc2626', fontSize: '0.74rem', fontWeight: 700, cursor: 'pointer' }}
+                style={{ padding: '6px 10px', borderRadius: '10px', border: '1px solid var(--risk-high-border)', background: 'var(--risk-high-bg)', color: 'var(--risk-high)', fontSize: '0.76rem', fontWeight: 700, cursor: 'pointer' }}
               >
-                🌧 Extreme Stress
-              </button>
-              <button
-                onClick={() => { setSimSlope(55); setSimTwi(6.0); setSimNdvi(0.22); setSimRain(55); setSimMoisture(65); }}
-                style={{ padding: '5px 10px', borderRadius: '14px', border: '1px solid #fef3c7', background: '#fffbeb', color: '#b45309', fontSize: '0.74rem', fontWeight: 700, cursor: 'pointer' }}
-              >
-                ⛰ Steep Incline
+                Extreme Stress
               </button>
               <button
                 onClick={() => { setSimSlope(18); setSimTwi(3.2); setSimNdvi(0.55); setSimRain(5); setSimMoisture(25); }}
-                style={{ padding: '5px 10px', borderRadius: '14px', border: '1px solid #bbf7d0', background: '#f0fdf4', color: '#15803d', fontSize: '0.74rem', fontWeight: 700, cursor: 'pointer' }}
+                style={{ padding: '6px 10px', borderRadius: '10px', border: '1px solid var(--risk-low-border)', background: 'var(--risk-low-bg)', color: 'var(--risk-low)', fontSize: '0.76rem', fontWeight: 700, cursor: 'pointer' }}
               >
-                ☀️ Stable Basin
+                Stable Basin
               </button>
             </div>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', alignItems: 'stretch' }}>
-            {/* Input Controls */}
-            <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', padding: '20px', borderRadius: '14px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              
-              {/* Slider 1: Slope */}
-              <div style={{ background: '#ffffff', padding: '12px 14px', borderRadius: '10px', border: '1px solid #e2e8f0' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.82rem', marginBottom: '8px', fontWeight: 700, color: '#0f172a' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <span style={{ color: '#0284c7' }}>⛰</span>
-                    <span>Terrain Slope Angle</span>
-                  </div>
-                  <span style={{ color: '#0284c7', background: '#e0f2fe', padding: '2px 8px', borderRadius: '8px', fontSize: '0.78rem' }}>{simSlope}°</span>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '16px' }}>
+            {/* Sliders */}
+            <div style={{ background: 'var(--input-bg)', border: '1px solid var(--card-border)', borderRadius: '14px', padding: '16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.78rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '4px' }}>
+                  <span>Terrain Slope Angle</span>
+                  <span style={{ color: 'var(--accent-blue)', background: 'var(--card-bg)', padding: '2px 6px', borderRadius: '4px' }}>{simSlope}°</span>
                 </div>
-                <input type="range" min="0" max="75" value={simSlope} onChange={(e) => setSimSlope(Number(e.target.value))} style={{ width: '100%', accentColor: '#0284c7', cursor: 'pointer' }} />
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.68rem', color: '#94a3b8', marginTop: '4px' }}>
-                  <span>0° Gentle Valley</span>
-                  <span>45° Steep Slope</span>
-                  <span>75° Precipitous Cliff</span>
-                </div>
+                <input type="range" min="0" max="75" value={simSlope} onChange={(e) => setSimSlope(Number(e.target.value))} style={{ width: '100%', accentColor: 'var(--accent-blue)', cursor: 'pointer' }} />
               </div>
 
-              {/* Slider 2: TWI */}
-              <div style={{ background: '#ffffff', padding: '12px 14px', borderRadius: '10px', border: '1px solid #e2e8f0' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.82rem', marginBottom: '8px', fontWeight: 700, color: '#0f172a' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <span style={{ color: '#0284c7' }}>🌊</span>
-                    <span>Topographic Wetness Index (TWI)</span>
-                  </div>
-                  <span style={{ color: '#0284c7', background: '#e0f2fe', padding: '2px 8px', borderRadius: '8px', fontSize: '0.78rem' }}>{simTwi}</span>
+              <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.78rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '4px' }}>
+                  <span>Topographic Wetness Index (TWI)</span>
+                  <span style={{ color: 'var(--accent-blue)', background: 'var(--card-bg)', padding: '2px 6px', borderRadius: '4px' }}>{simTwi}</span>
                 </div>
-                <input type="range" min="1" max="15" step="0.1" value={simTwi} onChange={(e) => setSimTwi(Number(e.target.value))} style={{ width: '100%', accentColor: '#0284c7', cursor: 'pointer' }} />
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.68rem', color: '#94a3b8', marginTop: '4px' }}>
-                  <span>1.0 Well-Drained</span>
-                  <span>7.0 Moderate Catchment</span>
-                  <span>15.0 Saturated Basin</span>
-                </div>
+                <input type="range" min="1" max="15" step="0.1" value={simTwi} onChange={(e) => setSimTwi(Number(e.target.value))} style={{ width: '100%', accentColor: 'var(--accent-blue)', cursor: 'pointer' }} />
               </div>
 
-              {/* Slider 3: NDVI */}
-              <div style={{ background: '#ffffff', padding: '12px 14px', borderRadius: '10px', border: '1px solid #e2e8f0' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.82rem', marginBottom: '8px', fontWeight: 700, color: '#0f172a' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <span style={{ color: '#16a34a' }}>🌱</span>
-                    <span>Vegetation Density Index (NDVI)</span>
-                  </div>
-                  <span style={{ color: '#16a34a', background: '#dcfce7', padding: '2px 8px', borderRadius: '8px', fontSize: '0.78rem' }}>{simNdvi}</span>
+              <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.78rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '4px' }}>
+                  <span>Vegetation Density Index (NDVI)</span>
+                  <span style={{ color: 'var(--risk-low)', background: 'var(--card-bg)', padding: '2px 6px', borderRadius: '4px' }}>{simNdvi}</span>
                 </div>
-                <input type="range" min="-0.2" max="0.8" step="0.01" value={simNdvi} onChange={(e) => setSimNdvi(Number(e.target.value))} style={{ width: '100%', accentColor: '#16a34a', cursor: 'pointer' }} />
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.68rem', color: '#94a3b8', marginTop: '4px' }}>
-                  <span>-0.2 Bare Rock/Water</span>
-                  <span>0.3 Sparse Forest</span>
-                  <span>0.8 Dense Canopy</span>
-                </div>
+                <input type="range" min="-0.2" max="0.8" step="0.01" value={simNdvi} onChange={(e) => setSimNdvi(Number(e.target.value))} style={{ width: '100%', accentColor: 'var(--risk-low)', cursor: 'pointer' }} />
               </div>
 
-              {/* Slider 4: Rainfall */}
-              <div style={{ background: '#ffffff', padding: '12px 14px', borderRadius: '10px', border: '1px solid #e2e8f0' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.82rem', marginBottom: '8px', fontWeight: 700, color: '#0f172a' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <span style={{ color: '#0284c7' }}>🌧</span>
-                    <span>Rainfall Intensity (24h Accumulated)</span>
-                  </div>
-                  <span style={{ color: simRain > 100 ? '#dc2626' : '#0284c7', background: simRain > 100 ? '#fef2f2' : '#e0f2fe', padding: '2px 8px', borderRadius: '8px', fontSize: '0.78rem', fontWeight: 800 }}>{simRain} mm</span>
+              <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.78rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '4px' }}>
+                  <span>Rainfall Intensity (24h Accumulated)</span>
+                  <span style={{ color: simRain > 100 ? 'var(--risk-high)' : 'var(--accent-blue)', background: 'var(--card-bg)', padding: '2px 6px', borderRadius: '4px' }}>{simRain} mm</span>
                 </div>
-                <input type="range" min="0" max="250" value={simRain} onChange={(e) => setSimRain(Number(e.target.value))} style={{ width: '100%', accentColor: simRain > 100 ? '#dc2626' : '#0284c7', cursor: 'pointer' }} />
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.68rem', color: '#94a3b8', marginTop: '4px' }}>
-                  <span>0 mm Clear</span>
-                  <span>80 mm Heavy Rain</span>
-                  <span>250 mm Cloudburst</span>
-                </div>
+                <input type="range" min="0" max="250" value={simRain} onChange={(e) => setSimRain(Number(e.target.value))} style={{ width: '100%', accentColor: 'var(--accent-blue)', cursor: 'pointer' }} />
               </div>
 
-              {/* Slider 5: Soil Moisture */}
-              <div style={{ background: '#ffffff', padding: '12px 14px', borderRadius: '10px', border: '1px solid #e2e8f0' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.82rem', marginBottom: '8px', fontWeight: 700, color: '#0f172a' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <span style={{ color: '#d97706' }}>💧</span>
-                    <span>Soil Moisture Saturation (%)</span>
-                  </div>
-                  <span style={{ color: simMoisture > 75 ? '#dc2626' : '#d97706', background: simMoisture > 75 ? '#fef2f2' : '#fffbeb', padding: '2px 8px', borderRadius: '8px', fontSize: '0.78rem', fontWeight: 800 }}>{simMoisture}%</span>
+              <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.78rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '4px' }}>
+                  <span>Soil Moisture Saturation (%)</span>
+                  <span style={{ color: simMoisture > 75 ? 'var(--risk-medium)' : 'var(--accent-blue)', background: 'var(--card-bg)', padding: '2px 6px', borderRadius: '4px' }}>{simMoisture}%</span>
                 </div>
-                <input type="range" min="0" max="100" value={simMoisture} onChange={(e) => setSimMoisture(Number(e.target.value))} style={{ width: '100%', accentColor: '#d97706', cursor: 'pointer' }} />
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.68rem', color: '#94a3b8', marginTop: '4px' }}>
-                  <span>0% Dry Soil</span>
-                  <span>50% Moist Ground</span>
-                  <span>100% Fully Saturated</span>
-                </div>
+                <input type="range" min="0" max="100" value={simMoisture} onChange={(e) => setSimMoisture(Number(e.target.value))} style={{ width: '100%', accentColor: 'var(--risk-medium)', cursor: 'pointer' }} />
               </div>
 
               <button
                 onClick={handleRunSimulator}
                 disabled={simulating}
                 style={{
-                  padding: '14px 20px',
-                  borderRadius: '10px',
-                  background: 'linear-gradient(135deg, #0284c7, #2563eb)',
+                  width: '100%',
+                  padding: '12px',
+                  borderRadius: '12px',
+                  background: 'var(--accent-blue)',
                   color: '#ffffff',
-                  border: 'none',
                   fontWeight: 800,
-                  fontSize: '0.9rem',
+                  fontSize: '0.84rem',
+                  border: 'none',
                   cursor: 'pointer',
                   display: 'flex',
                   alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '10px',
-                  boxShadow: '0 4px 14px rgba(2, 132, 199, 0.35)',
-                  transition: 'all 0.2s ease'
+                  justify: 'center',
+                  gap: '8px',
+                  boxShadow: '0 4px 14px var(--accent-blue-glow)'
                 }}
               >
-                {simulating ? <RefreshCw className="spin" size={18} /> : <Zap size={18} />}
+                {simulating ? <RefreshCw className="animate-spin" size={16} /> : <Zap size={16} />}
                 <span>Execute {currentArch.shortName} AI Inference</span>
               </button>
             </div>
 
-            {/* Results Output Console */}
+            {/* Inference Result Box */}
             {simResult ? (
-              <div style={{ background: 'linear-gradient(135deg, #ffffff, #f0f9ff)', border: '1px solid #bae6fd', borderRadius: '14px', padding: '24px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', boxShadow: '0 4px 16px rgba(2, 132, 199, 0.08)' }}>
+              <div style={{ background: 'var(--input-bg)', border: '1px solid var(--panel-border-hover)', borderRadius: '14px', padding: '20px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
                 <div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #e0f2fe', paddingBottom: '12px', marginBottom: '16px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', pb: '8px', borderBottom: '1px solid var(--card-border)' }}>
                     <div>
-                      <div style={{ fontSize: '0.72rem', color: '#64748b', fontWeight: 700, textTransform: 'uppercase' }}>Inference Pipeline</div>
-                      <div style={{ fontSize: '0.95rem', fontWeight: 800, color: '#0284c7' }}>{simResult.model_used || currentArch.name}</div>
+                      <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700 }}>INFERENCE MODEL</div>
+                      <div style={{ fontSize: '0.86rem', fontWeight: 800, color: 'var(--accent-blue)' }}>{simResult.model_used || currentArch.name}</div>
                     </div>
-                    <span style={{ fontSize: '0.72rem', fontWeight: 800, padding: '4px 10px', borderRadius: '12px', background: '#dcfce7', color: '#15803d', border: '1px solid #86efac' }}>
-                      INFERENCE READY
+                    <span style={{ fontSize: '0.68rem', fontWeight: 800, padding: '2px 8px', borderRadius: '6px', background: 'var(--risk-low-bg)', color: 'var(--risk-low)', border: '1px solid var(--risk-low-border)' }}>
+                      READY
                     </span>
                   </div>
 
-                  {/* Main Score Dial Display */}
-                  <div style={{ textAlign: 'center', margin: '16px 0 24px 0' }}>
-                    <div style={{ fontSize: '0.78rem', color: '#64748b', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                      Calculated Landslide Hazard Risk Index
-                    </div>
-
+                  <div style={{ textAlign: 'center', margin: '16px 0' }}>
+                    <div style={{ fontSize: '0.72rem', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase' }}>Calculated Landslide Hazard Risk Index</div>
                     <div style={{
-                      fontSize: '3.8rem',
+                      fontSize: '3rem',
                       fontWeight: 900,
-                      lineHeight: '1',
-                      margin: '10px 0',
-                      color: simResult.risk_level === 'HIGH' ? '#dc2626' : (simResult.risk_level === 'MEDIUM' ? '#d97706' : '#16a34a'),
-                      textShadow: simResult.risk_level === 'HIGH' ? '0 0 20px rgba(220, 38, 38, 0.2)' : '0 0 20px rgba(22, 163, 74, 0.2)'
+                      margin: '8px 0',
+                      color: simResult.risk_level === 'HIGH' ? 'var(--risk-high)' : (simResult.risk_level === 'MEDIUM' ? 'var(--risk-medium)' : 'var(--risk-low)')
                     }}>
-                      {simResult.risk_score_percent !== undefined ? simResult.risk_score_percent : (simResult.prediction ? 85 : 20)}<span style={{ fontSize: '1.8rem', fontWeight: 700 }}>%</span>
+                      {simResult.risk_score_percent !== undefined ? simResult.risk_score_percent : 85}%
                     </div>
-
-                    <div style={{ display: 'inline-block' }}>
-                      <span style={{
-                        padding: '6px 18px',
-                        borderRadius: '20px',
-                        fontSize: '0.88rem',
-                        fontWeight: 800,
-                        letterSpacing: '0.05em',
-                        background: simResult.risk_level === 'HIGH' ? '#fef2f2' : (simResult.risk_level === 'MEDIUM' ? '#fffbeb' : '#f0fdf4'),
-                        color: simResult.risk_level === 'HIGH' ? '#dc2626' : (simResult.risk_level === 'MEDIUM' ? '#b45309' : '#15803d'),
-                        border: `1px solid ${simResult.risk_level === 'HIGH' ? '#fecaca' : (simResult.risk_level === 'MEDIUM' ? '#fef3c7' : '#bbf7d0')}`,
-                        boxShadow: '0 2px 8px rgba(0,0,0,0.04)'
-                      }}>
-                        {simResult.risk_level} RISK HAZARD
-                      </span>
-                    </div>
+                    <span style={{
+                      display: 'inline-block',
+                      padding: '4px 14px',
+                      borderRadius: '20px',
+                      fontSize: '0.78rem',
+                      fontWeight: 800,
+                      background: simResult.risk_level === 'HIGH' ? 'var(--risk-high-bg)' : (simResult.risk_level === 'MEDIUM' ? 'var(--risk-medium-bg)' : 'var(--risk-low-bg)'),
+                      color: simResult.risk_level === 'HIGH' ? 'var(--risk-high)' : (simResult.risk_level === 'MEDIUM' ? 'var(--risk-medium)' : 'var(--risk-low)'),
+                      border: `1px solid ${simResult.risk_level === 'HIGH' ? 'var(--risk-high-border)' : (simResult.risk_level === 'MEDIUM' ? 'var(--risk-medium-border)' : 'var(--risk-low-border)')}`
+                    }}>
+                      {simResult.risk_level} RISK HAZARD
+                    </span>
                   </div>
 
-                  {/* Factor Contribution Breakdown */}
-                  <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '16px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                    <div style={{ fontSize: '0.8rem', fontWeight: 800, color: '#0f172a', borderBottom: '1px solid #f1f5f9', paddingBottom: '6px' }}>
-                      Live Feature Sensitivity Breakdown:
+                  <div style={{ borderTop: '1px solid var(--card-border)', paddingTop: '12px', display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '0.78rem' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                      <span style={{ color: 'var(--text-muted)' }}>Slope Factor ({simSlope}°):</span>
+                      <span style={{ color: 'var(--text-primary)', fontWeight: 700 }}>{Math.round((simSlope / 75) * 35)}%</span>
                     </div>
-
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '0.78rem' }}>
-                      <div>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2px' }}>
-                          <span style={{ color: '#64748b' }}>Slope Shear Stress ({simSlope}°):</span>
-                          <strong style={{ color: simSlope > 35 ? '#dc2626' : '#0284c7' }}>{Math.round((simSlope / 75) * 35)}% Impact</strong>
-                        </div>
-                        <div style={{ height: '4px', background: '#f1f5f9', borderRadius: '2px', overflow: 'hidden' }}>
-                          <div style={{ width: `${Math.min((simSlope / 75) * 100, 100)}%`, height: '100%', background: simSlope > 35 ? '#dc2626' : '#0284c7', borderRadius: '2px' }} />
-                        </div>
-                      </div>
-
-                      <div>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2px' }}>
-                          <span style={{ color: '#64748b' }}>Rainfall Saturation Trigger ({simRain} mm):</span>
-                          <strong style={{ color: simRain > 80 ? '#dc2626' : '#0284c7' }}>{Math.round((simRain / 250) * 35)}% Impact</strong>
-                        </div>
-                        <div style={{ height: '4px', background: '#f1f5f9', borderRadius: '2px', overflow: 'hidden' }}>
-                          <div style={{ width: `${Math.min((simRain / 250) * 100, 100)}%`, height: '100%', background: simRain > 80 ? '#dc2626' : '#0284c7', borderRadius: '2px' }} />
-                        </div>
-                      </div>
-
-                      <div>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2px' }}>
-                          <span style={{ color: '#64748b' }}>Groundwater Saturation ({simMoisture}%):</span>
-                          <strong style={{ color: simMoisture > 70 ? '#dc2626' : '#d97706' }}>{Math.round((simMoisture / 100) * 20)}% Impact</strong>
-                        </div>
-                        <div style={{ height: '4px', background: '#f1f5f9', borderRadius: '2px', overflow: 'hidden' }}>
-                          <div style={{ width: `${simMoisture}%`, height: '100%', background: simMoisture > 70 ? '#dc2626' : '#d97706', borderRadius: '2px' }} />
-                        </div>
-                      </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                      <span style={{ color: 'var(--text-muted)' }}>Rainfall Trigger ({simRain}mm):</span>
+                      <span style={{ color: 'var(--text-primary)', fontWeight: 700 }}>{Math.round((simRain / 250) * 35)}%</span>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                      <span style={{ color: 'var(--text-muted)' }}>Soil Moisture ({simMoisture}%):</span>
+                      <span style={{ color: 'var(--text-primary)', fontWeight: 700 }}>{Math.round((simMoisture / 100) * 20)}%</span>
                     </div>
                   </div>
                 </div>
 
-                <div style={{ background: simResult.risk_level === 'HIGH' ? '#fef2f2' : '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '10px 12px', fontSize: '0.75rem', color: '#475569', marginTop: '14px', textAlign: 'center' }}>
-                  <strong>Operational Protocol:</strong> {simResult.risk_level === 'HIGH' ? '⚠ Issue immediate precautionary evacuation advisories.' : 'Continuous monitoring active.'}
+                <div style={{ marginTop: '12px', textAlign: 'center', fontSize: '0.74rem', color: 'var(--text-secondary)', background: 'var(--card-bg)', padding: '8px', borderRadius: '8px', border: '1px solid var(--card-border)' }}>
+                  Operational Protocol: {simResult.risk_level === 'HIGH' ? '⚠ Precautionary advisories active.' : 'Continuous monitoring active.'}
                 </div>
               </div>
             ) : (
-              <div style={{ background: '#f8fafc', border: '2px dashed #cbd5e1', borderRadius: '14px', padding: '30px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '16px', textAlign: 'center' }}>
-                <div style={{ width: '56px', height: '56px', borderRadius: '16px', background: '#e0f2fe', border: '1px solid #bae6fd', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <Cpu size={28} color="#0284c7" />
+              <div style={{ background: 'var(--input-bg)', border: '1px solid var(--card-border)', borderRadius: '14px', padding: '24px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', gap: '12px' }}>
+                <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'var(--accent-blue-glow)', border: '1px solid var(--panel-border-hover)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--accent-blue)' }}>
+                  <Cpu size={24} />
                 </div>
-
                 <div>
-                  <h4 style={{ fontSize: '1rem', fontWeight: 800, color: '#0f172a', margin: '0 0 6px 0' }}>
-                    AI Inference Engine Terminal
-                  </h4>
-                  <p style={{ fontSize: '0.82rem', color: '#64748b', maxWidth: '340px', margin: 0, lineHeight: '1.5' }}>
-                    Select a preset or adjust the environmental sliders on the left and click <strong>Execute Inference</strong> to run real-time predictions with <strong>{currentArch.shortName}</strong>.
-                  </p>
-                </div>
-
-                <div style={{ display: 'flex', gap: '12px', marginTop: '8px' }}>
-                  <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', padding: '6px 12px', borderRadius: '8px', fontSize: '0.72rem', color: '#64748b', fontWeight: 600 }}>
-                    32 Vector Features
-                  </div>
-                  <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', padding: '6px 12px', borderRadius: '8px', fontSize: '0.72rem', color: '#64748b', fontWeight: 600 }}>
-                    ~15ms Latency
-                  </div>
-                  <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', padding: '6px 12px', borderRadius: '8px', fontSize: '0.72rem', color: '#15803d', fontWeight: 700 }}>
-                    {currentArch.accuracy} Accuracy
-                  </div>
+                  <h4 style={{ fontSize: '0.9rem', fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>AI Inference Engine Terminal</h4>
+                  <p style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', margin: '4px 0 0 0' }}>Adjust the environmental parameters on the left and click <strong>Execute Inference</strong>.</p>
                 </div>
               </div>
             )}
           </div>
-        </div>
+        </section>
       )}
 
       {/* TAB 4: ALL 32 INPUT FEATURES */}
       {activeTab === 'features' && (
-        <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '20px', flex: 1, display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
+        <section style={{ background: 'var(--card-bg)', border: '1px solid var(--card-border)', borderRadius: '16px', padding: '20px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justify: 'space-between', gap: '12px', paddingBottom: '12px', borderBottom: '1px solid var(--card-border)' }}>
             <div>
-              <h3 style={{ fontSize: '1.1rem', fontWeight: 800, margin: 0, color: '#0f172a' }}>
-                32 Environmental & Remote Sensing Input Features
-              </h3>
-              <p style={{ fontSize: '0.8rem', color: '#64748b', margin: '3px 0 0 0' }}>
-                Complete list of topographic, hydrological, vegetation index, and radar texture factors used from the IndLands dataset.
-              </p>
+              <h3 style={{ fontSize: '0.95rem', fontWeight: 800, margin: 0, color: 'var(--text-primary)' }}>32 Environmental & Remote Sensing Input Features</h3>
+              <p style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', margin: '4px 0 0 0' }}>Topographic, hydrological, vegetation index, and radar texture factors.</p>
             </div>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-              <Filter size={15} color="#64748b" />
-              <span style={{ fontSize: '0.78rem', color: '#64748b', fontWeight: 600 }}>Category Filter:</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', fontSize: '0.78rem' }}>
+              <Filter size={14} color="var(--text-muted)" />
+              <span style={{ color: 'var(--text-muted)' }}>Filter:</span>
               {['ALL', 'Terrain Topography', 'Hydrology', 'Land Cover', 'Radar Texture'].map(cat => (
                 <button
                   key={cat}
                   onClick={() => setSelectedCategoryFilter(cat)}
                   style={{
-                    padding: '4px 12px', borderRadius: '16px', border: '1px solid #cbd5e1',
-                    fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer',
-                    background: selectedCategoryFilter === cat ? '#0284c7' : '#f8fafc',
-                    color: selectedCategoryFilter === cat ? '#ffffff' : '#475569'
+                    padding: '4px 10px',
+                    borderRadius: '8px',
+                    fontSize: '0.74rem',
+                    fontWeight: 700,
+                    border: selectedCategoryFilter === cat ? '1px solid var(--accent-blue)' : '1px solid var(--card-border)',
+                    background: selectedCategoryFilter === cat ? 'var(--accent-blue)' : 'var(--input-bg)',
+                    color: selectedCategoryFilter === cat ? '#ffffff' : 'var(--text-secondary)',
+                    cursor: 'pointer'
                   }}
                 >
                   {cat}
@@ -966,93 +809,82 @@ export default function ModelInformationPage() {
             </div>
           </div>
 
-          {/* 3-Column Responsive Features Grid */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '14px', flex: 1 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '12px' }}>
             {filteredFeatures.map((f) => (
-              <div key={f.id} style={{
-                background: '#f8fafc',
-                border: '1px solid #e2e8f0',
-                padding: '14px 16px',
-                borderRadius: '10px',
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'space-between',
-                boxShadow: '0 1px 3px rgba(0,0,0,0.02)'
-              }}>
+              <div key={f.id} style={{ background: 'var(--input-bg)', border: '1px solid var(--card-border)', borderRadius: '12px', padding: '14px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: '8px' }}>
                 <div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '4px' }}>
-                    <div style={{ fontWeight: 800, fontSize: '0.88rem', color: '#0f172a' }}>{f.name}</div>
-                    <span style={{ fontSize: '0.7rem', fontWeight: 700, color: '#0284c7', background: '#e0f2fe', padding: '2px 8px', borderRadius: '10px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                    <span style={{ fontSize: '0.82rem', fontWeight: 800, color: 'var(--text-primary)' }}>{f.name}</span>
+                    <span style={{ fontSize: '0.7rem', fontWeight: 800, color: 'var(--accent-blue)', background: 'var(--card-bg)', padding: '2px 6px', borderRadius: '4px', border: '1px solid var(--card-border)' }}>
                       {f.code}
                     </span>
                   </div>
-
-                  <div style={{ fontSize: '0.76rem', color: '#0284c7', fontWeight: 700, marginBottom: '6px' }}>
-                    {f.category}
-                  </div>
-
-                  <p style={{ fontSize: '0.76rem', color: '#475569', lineHeight: '1.45', margin: 0 }}>
-                    {f.desc}
-                  </p>
+                  <div style={{ fontSize: '0.74rem', fontWeight: 700, color: 'var(--accent-blue)', marginTop: '2px' }}>{f.category}</div>
+                  <p style={{ fontSize: '0.74rem', color: 'var(--text-secondary)', marginTop: '6px', lineHeight: '1.4' }}>{f.desc}</p>
                 </div>
-
-                <div style={{ fontSize: '0.7rem', color: '#94a3b8', marginTop: '10px', paddingTop: '8px', borderTop: '1px solid #f1f5f9', display: 'flex', justifyContent: 'space-between' }}>
-                  <span>Source: <strong>{f.source}</strong></span>
-                  <span>Factor #{f.id}</span>
+                <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', paddingTop: '8px', borderTop: '1px solid var(--card-border)', display: 'flex', justifyContent: 'space-between' }}>
+                  <span>Source: {f.source}</span>
+                  <span>#{f.id}</span>
                 </div>
               </div>
             ))}
           </div>
-        </div>
+        </section>
       )}
 
       {/* TAB 5: VERSION HISTORY */}
       {activeTab === 'history' && (
-        <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '20px', flex: 1 }}>
-          <h3 style={{ fontSize: '1.05rem', fontWeight: 700, marginBottom: '16px', color: '#0f172a' }}>
-            Model Version Changelog & Training Benchmark Record
-          </h3>
-          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.84rem' }}>
-            <thead>
-              <tr style={{ background: '#f8fafc', color: '#64748b', textAlign: 'left' }}>
-                <th style={{ padding: '12px' }}>Version</th>
-                <th style={{ padding: '12px' }}>Release Date</th>
-                <th style={{ padding: '12px' }}>Algorithm</th>
-                <th style={{ padding: '12px' }}>Dataset Samples</th>
-                <th style={{ padding: '12px' }}>Accuracy & ROC-AUC</th>
-                <th style={{ padding: '12px' }}>Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr style={{ borderBottom: '1px solid #f1f5f9', background: selectedModelArch === 'xgb' ? '#f0f9ff' : 'transparent' }}>
-                <td style={{ padding: '12px', fontWeight: 700, color: '#0f172a' }}>v2.0 (Current GBDT Operational)</td>
-                <td style={{ padding: '12px', color: '#64748b' }}>25 Sep 2026</td>
-                <td style={{ padding: '12px', fontWeight: 700, color: '#15803d' }}>Gradient Boosted Decision Trees (XGBoost)</td>
-                <td style={{ padding: '12px' }}>285,975 spatial points</td>
-                <td style={{ padding: '12px', fontWeight: 800, color: '#16a34a' }}>96.73% (ROC-AUC 0.9544)</td>
-                <td style={{ padding: '12px' }}><span style={{ padding: '3px 10px', background: '#dcfce7', color: '#15803d', borderRadius: '12px', fontSize: '0.72rem', fontWeight: 700 }}>ACTIVE</span></td>
-              </tr>
-              <tr style={{ borderBottom: '1px solid #f1f5f9', background: selectedModelArch === 'rf' ? '#f0f9ff' : 'transparent' }}>
-                <td style={{ padding: '12px', fontWeight: 700, color: '#0f172a' }}>v1.0 (Ensemble Benchmark)</td>
-                <td style={{ padding: '12px', color: '#64748b' }}>10 Dec 2024</td>
-                <td style={{ padding: '12px' }}>Random Forest (100 Trees, max_depth=16)</td>
-                <td style={{ padding: '12px' }}>285,975 spatial points</td>
-                <td style={{ padding: '12px', fontWeight: 800, color: '#0284c7' }}>97.88% (ROC-AUC 0.9634)</td>
-                <td style={{ padding: '12px' }}><span style={{ padding: '3px 10px', background: '#e0f2fe', color: '#0369a1', borderRadius: '12px', fontSize: '0.72rem', fontWeight: 700 }}>ACTIVE</span></td>
-              </tr>
-              <tr style={{ borderBottom: '1px solid #f1f5f9', background: selectedModelArch === 'svm' ? '#f0f9ff' : 'transparent' }}>
-                <td style={{ padding: '12px', fontWeight: 700, color: '#64748b' }}>v0.9 (Beta Classifier)</td>
-                <td style={{ padding: '12px', color: '#64748b' }}>15 Nov 2024</td>
-                <td style={{ padding: '12px', color: '#64748b' }}>Support Vector Classifier (SVM RBF)</td>
-                <td style={{ padding: '12px', color: '#64748b' }}>285,975 spatial points</td>
-                <td style={{ padding: '12px', fontWeight: 600, color: '#64748b' }}>87.88% (ROC-AUC 0.8959)</td>
-                <td style={{ padding: '12px' }}><span style={{ padding: '3px 10px', background: '#f1f5f9', color: '#64748b', borderRadius: '12px', fontSize: '0.72rem', fontWeight: 600 }}>ARCHIVED</span></td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+        <section style={{ background: 'var(--card-bg)', border: '1px solid var(--card-border)', borderRadius: '16px', padding: '20px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          <h3 style={{ fontSize: '0.95rem', fontWeight: 800, margin: 0, color: 'var(--text-primary)' }}>Model Version Changelog & Training Benchmark Record</h3>
+          <div style={{ overflowX: 'auto' }}>
+            <table style={{ width: '100%', textAlign: 'left', fontSize: '0.78rem', borderCollapse: 'collapse' }}>
+              <thead>
+                <tr style={{ borderBottom: '1px solid var(--card-border)', color: 'var(--text-muted)' }}>
+                  <th style={{ padding: '10px' }}>Version</th>
+                  <th style={{ padding: '10px' }}>Release Date</th>
+                  <th style={{ padding: '10px' }}>Algorithm</th>
+                  <th style={{ padding: '10px' }}>Samples</th>
+                  <th style={{ padding: '10px' }}>Accuracy</th>
+                  <th style={{ padding: '10px' }}>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr style={{ borderBottom: '1px solid var(--card-border)', background: selectedModelArch === 'xgb' ? 'var(--accent-blue-glow)' : 'transparent' }}>
+                  <td style={{ padding: '12px 10px', fontWeight: 800, color: 'var(--text-primary)' }}>v2.0 (GBDT Operational)</td>
+                  <td style={{ padding: '12px 10px', color: 'var(--text-secondary)' }}>25 Sep 2026</td>
+                  <td style={{ padding: '12px 10px', fontWeight: 700, color: 'var(--risk-low)' }}>Gradient Boosted Decision Trees (XGBoost)</td>
+                  <td style={{ padding: '12px 10px', color: 'var(--text-secondary)' }}>285,975 spatial points</td>
+                  <td style={{ padding: '12px 10px', fontWeight: 900, color: 'var(--risk-low)' }}>96.73% (ROC-AUC 0.9544)</td>
+                  <td style={{ padding: '12px 10px' }}>
+                    <span style={{ padding: '2px 8px', borderRadius: '6px', background: 'var(--risk-low-bg)', color: 'var(--risk-low)', border: '1px solid var(--risk-low-border)', fontSize: '0.68rem', fontWeight: 800 }}>ACTIVE</span>
+                  </td>
+                </tr>
+                <tr style={{ borderBottom: '1px solid var(--card-border)', background: selectedModelArch === 'rf' ? 'var(--accent-blue-glow)' : 'transparent' }}>
+                  <td style={{ padding: '12px 10px', fontWeight: 800, color: 'var(--text-primary)' }}>v1.0 (Ensemble Benchmark)</td>
+                  <td style={{ padding: '12px 10px', color: 'var(--text-secondary)' }}>10 Dec 2024</td>
+                  <td style={{ padding: '12px 10px', color: 'var(--text-secondary)' }}>Random Forest (100 Trees, max_depth=16)</td>
+                  <td style={{ padding: '12px 10px', color: 'var(--text-secondary)' }}>285,975 spatial points</td>
+                  <td style={{ padding: '12px 10px', fontWeight: 900, color: 'var(--accent-blue)' }}>97.88% (ROC-AUC 0.9634)</td>
+                  <td style={{ padding: '12px 10px' }}>
+                    <span style={{ padding: '2px 8px', borderRadius: '6px', background: 'var(--accent-blue-glow)', color: 'var(--accent-blue)', border: '1px solid var(--panel-border-hover)', fontSize: '0.68rem', fontWeight: 800 }}>ACTIVE</span>
+                  </td>
+                </tr>
+                <tr style={{ borderBottom: '1px solid var(--card-border)', background: selectedModelArch === 'svm' ? 'var(--accent-blue-glow)' : 'transparent' }}>
+                  <td style={{ padding: '12px 10px', fontWeight: 800, color: 'var(--text-muted)' }}>v0.9 (Beta Classifier)</td>
+                  <td style={{ padding: '12px 10px', color: 'var(--text-muted)' }}>15 Nov 2024</td>
+                  <td style={{ padding: '12px 10px', color: 'var(--text-muted)' }}>Support Vector Classifier (SVM RBF)</td>
+                  <td style={{ padding: '12px 10px', color: 'var(--text-muted)' }}>285,975 spatial points</td>
+                  <td style={{ padding: '12px 10px', fontWeight: 700, color: 'var(--text-muted)' }}>87.88% (ROC-AUC 0.8959)</td>
+                  <td style={{ padding: '12px 10px' }}>
+                    <span style={{ padding: '2px 8px', borderRadius: '6px', background: 'var(--input-bg)', color: 'var(--text-muted)', fontSize: '0.68rem', fontWeight: 700 }}>ARCHIVED</span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
       )}
+
     </div>
   );
 }
-

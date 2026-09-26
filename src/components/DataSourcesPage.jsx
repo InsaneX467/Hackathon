@@ -1,5 +1,14 @@
-import { Database, Radio, CloudRain, Waves, Globe, History, Info, ExternalLink, RefreshCw } from 'lucide-react';
-import { SENSOR_NODES } from '../services/telemetryService';
+import { useState } from 'react';
+import { 
+  Database, 
+  Radio, 
+  CloudRain, 
+  Waves, 
+  Globe, 
+  History, 
+  Info, 
+  ExternalLink 
+} from 'lucide-react';
 
 export default function DataSourcesPage() {
   const sources = [
@@ -44,7 +53,7 @@ export default function DataSourcesPage() {
       icon: Globe,
       desc: '30,000 spatial raster points with 32 remote sensing bands (Sentinel-2, Landsat-8, ALOS PALSAR DEM).',
       stats: '30,000 Samples',
-      lastUpdate: 'Last updated: 2 days ago',
+      lastUpdate: 'Last update: 2 days ago',
       provider: 'Hugging Face Hub (DataUploader/IndLands)'
     },
     {
@@ -54,87 +63,143 @@ export default function DataSourcesPage() {
       statusType: 'available',
       icon: History,
       desc: 'Historical flood marks and landslide event frequency records (2013 Kedarnath and 2021 Chamoli events).',
-      stats: 'Archival Reference',
-      lastUpdate: 'Last updated: 2021',
+      stats: 'Verified Records',
+      lastUpdate: 'Last update: 1 month ago',
       provider: 'State Disaster Management Authority'
     }
   ];
 
   return (
-    <div className="page-container data-sources-page" style={{ padding: '24px', color: '#0f172a', overflowY: 'auto', maxHeight: 'calc(100vh - 110px)' }}>
-      {/* Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <div style={{ width: '42px', height: '42px', borderRadius: '10px', background: '#e0f2fe', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <Database size={22} color="#0284c7" />
+    <div 
+      className="flex-1 flex flex-col p-6 space-y-5 max-w-[1700px] mx-auto w-full overflow-y-auto"
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        padding: '24px',
+        gap: '20px',
+        width: '100%',
+        boxSizing: 'border-box',
+        color: 'var(--text-primary)',
+        height: '100%',
+        overflowY: 'auto'
+      }}
+    >
+      {/* Header Section */}
+      <div 
+        className="flex items-center justify-between pb-4"
+        style={{
+          display: 'flex',
+          justify: 'space-between',
+          alignItems: 'center',
+          paddingBottom: '16px',
+          borderBottom: '1px solid var(--card-border)',
+          flexWrap: 'wrap',
+          gap: '12px'
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+          <div style={{
+            width: '44px',
+            height: '44px',
+            borderRadius: '12px',
+            background: 'var(--accent-blue-glow)',
+            border: '1px solid var(--card-border)',
+            display: 'flex',
+            alignItems: 'center',
+            justify: 'center',
+            color: 'var(--accent-blue)'
+          }}>
+            <Database size={22} />
           </div>
           <div>
-            <h1 style={{ fontSize: '1.4rem', fontWeight: 800, margin: 0, color: '#0f172a' }}>Data Sources</h1>
-            <p style={{ color: '#64748b', fontSize: '0.85rem', margin: '2px 0 0 0' }}>
-              Overview of all environmental data streams feeding BhoomiRakshak
+            <h1 style={{ fontSize: '1.35rem', fontWeight: 800, margin: 0, color: 'var(--text-primary)' }}>Data Sources</h1>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '0.82rem', margin: '3px 0 0 0' }}>
+              Overview of all environmental data streams feeding Bhoomirakshak
             </p>
           </div>
         </div>
 
         <button style={{
-          display: 'flex', alignItems: 'center', gap: '6px',
-          padding: '8px 16px', borderRadius: '8px', border: '1px solid #0284c7',
-          background: '#ffffff', color: '#0284c7', fontSize: '0.82rem', fontWeight: 600,
-          cursor: 'pointer', transition: 'all 0.2s'
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px',
+          padding: '8px 16px',
+          borderRadius: '10px',
+          border: '1px solid var(--card-border)',
+          background: 'var(--card-bg)',
+          color: 'var(--text-primary)',
+          fontSize: '0.8rem',
+          fontWeight: 700,
+          cursor: 'pointer',
+          boxShadow: 'var(--glass-shadow)'
         }}>
-          <ExternalLink size={14} /> View Data Details
+          <ExternalLink size={14} color="var(--accent-blue)" />
+          <span>View Data Details</span>
         </button>
       </div>
 
-      {/* Perfectly Arranged 2-Column Balanced Cards Grid */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '18px', marginBottom: '24px' }}>
-        {sources.map((s, idx) => {
+      {/* 2-Column Grid of Environmental Data Source Cards */}
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))',
+        gap: '18px'
+      }}>
+        {sources.map((s) => {
           const IconComp = s.icon;
           const isLive = s.statusType === 'live';
-          const isFullWidth = idx === sources.length - 1; // Last card spans nicely or fits clean grid
 
           return (
             <div 
               key={s.id} 
               style={{
-                background: '#ffffff',
-                border: '1px solid #e2e8f0',
-                borderRadius: '12px',
+                background: 'var(--card-bg)',
+                border: '1px solid var(--card-border)',
+                borderRadius: '16px',
                 padding: '20px',
-                boxShadow: '0 2px 8px rgba(0,0,0,0.03)',
+                boxShadow: 'var(--glass-shadow)',
                 display: 'flex',
                 flexDirection: 'column',
                 justify: 'space-between',
-                gridColumn: isFullWidth ? 'span 2' : 'span 1'
+                gap: '16px'
               }}
             >
               <div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '14px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                     <div style={{
-                      width: '40px', height: '40px', borderRadius: '10px',
-                      background: isLive ? '#e0f2fe' : '#f1f5f9',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center'
+                      width: '40px',
+                      height: '40px',
+                      borderRadius: '12px',
+                      background: 'var(--accent-blue-glow)',
+                      border: '1px solid var(--card-border)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justify: 'center',
+                      color: 'var(--accent-blue)'
                     }}>
-                      <IconComp size={20} color={isLive ? '#0284c7' : '#64748b'} />
+                      <IconComp size={20} />
                     </div>
                     <div>
-                      <h3 style={{ fontSize: '1rem', fontWeight: 700, margin: 0, color: '#0f172a' }}>{s.name}</h3>
-                      <span style={{ fontSize: '0.75rem', color: '#64748b' }}>{s.provider}</span>
+                      <h3 style={{ fontSize: '0.98rem', fontWeight: 800, margin: 0, color: 'var(--text-primary)' }}>{s.name}</h3>
+                      <span style={{ fontSize: '0.74rem', color: 'var(--text-muted)' }}>{s.provider}</span>
                     </div>
                   </div>
 
                   <span style={{
-                    padding: '3px 10px', borderRadius: '12px', fontSize: '0.72rem', fontWeight: 700,
-                    background: isLive ? '#dcfce7' : '#e0f2fe',
-                    color: isLive ? '#15803d' : '#0369a1',
-                    border: `1px solid ${isLive ? '#86efac' : '#7dd3fc'}`
+                    padding: '3px 10px',
+                    borderRadius: '20px',
+                    fontSize: '0.7rem',
+                    fontWeight: 800,
+                    background: isLive ? 'var(--risk-low-bg)' : 'var(--accent-blue-glow)',
+                    color: isLive ? 'var(--risk-low)' : 'var(--accent-blue)',
+                    border: `1px solid ${isLive ? 'var(--risk-low-border)' : 'var(--card-border)'}`,
+                    letterSpacing: '0.05em'
                   }}>
                     {s.status}
                   </span>
                 </div>
 
-                <p style={{ fontSize: '0.85rem', color: '#475569', lineHeight: '1.5', margin: '0 0 16px 0' }}>
+                <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', lineHeight: '1.5', margin: 0 }}>
                   {s.desc}
                 </p>
               </div>
@@ -143,33 +208,33 @@ export default function DataSourcesPage() {
                 display: 'flex',
                 justify: 'space-between',
                 alignItems: 'center',
-                fontSize: '0.78rem',
-                color: '#64748b',
-                borderTop: '1px solid #f1f5f9',
+                fontSize: '0.76rem',
+                color: 'var(--text-muted)',
+                borderTop: '1px solid var(--card-border)',
                 paddingTop: '12px'
               }}>
-                <span style={{ fontWeight: 600, color: isLive ? '#15803d' : '#64748b' }}>{s.stats}</span>
-                <span>{s.lastUpdate}</span>
+                <span style={{ fontWeight: 800, color: isLive ? 'var(--risk-low)' : 'var(--text-primary)' }}>{s.stats}</span>
+                <span style={{ fontFamily: 'monospace' }}>{s.lastUpdate}</span>
               </div>
             </div>
           );
         })}
       </div>
 
-      {/* Bottom Info Note */}
+      {/* Bottom Information Note */}
       <div style={{
-        background: '#f8fafc',
-        border: '1px solid #e2e8f0',
-        borderRadius: '10px',
+        background: 'var(--card-bg)',
+        border: '1px solid var(--card-border)',
+        borderRadius: '12px',
         padding: '12px 18px',
         display: 'flex',
         alignItems: 'center',
         gap: '10px',
-        fontSize: '0.82rem',
-        color: '#64748b'
+        fontSize: '0.8rem',
+        color: 'var(--text-secondary)'
       }}>
-        <Info size={18} color="#0284c7" />
-        <span>Data sources are automatically synchronized. Status indicators show the latest available data.</span>
+        <Info size={16} color="var(--accent-blue)" style={{ flexShrink: 0 }} />
+        <span>Data sources are automatically synchronized. Status indicators display real-time stream status.</span>
       </div>
     </div>
   );
